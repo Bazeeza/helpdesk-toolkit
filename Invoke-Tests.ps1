@@ -70,6 +70,11 @@ function Invoke-Analysis {
 }
 
 function Invoke-Test {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$OutputVerbosity
+    )
+
     $pester = Get-Module -ListAvailable -Name 'Pester' |
         Where-Object { $_.Version -ge [version]'5.2.0' } |
         Sort-Object -Property Version -Descending |
@@ -83,7 +88,7 @@ function Invoke-Test {
     $configuration = New-PesterConfiguration
     $configuration.Run.Path = Join-Path -Path $repoRoot -ChildPath 'Tests'
     $configuration.Run.PassThru = $true
-    $configuration.Output.Verbosity = $Verbosity
+    $configuration.Output.Verbosity = $OutputVerbosity
     $configuration.TestResult.Enabled = $true
     $configuration.TestResult.OutputFormat = 'NUnitXml'
     $configuration.TestResult.OutputPath = Join-Path -Path $repoRoot -ChildPath 'testResults.xml'
@@ -98,4 +103,4 @@ function Invoke-Test {
 }
 
 if ($Task -in 'Analyze', 'All') { Invoke-Analysis }
-if ($Task -in 'Test', 'All') { Invoke-Test }
+if ($Task -in 'Test', 'All') { Invoke-Test -OutputVerbosity $Verbosity }
