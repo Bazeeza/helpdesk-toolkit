@@ -55,6 +55,16 @@ Describe 'Module manifest' {
         $manifest.ProjectUri | Should -Not -BeNullOrEmpty
     }
 
+    It 'has the version of the latest release in CHANGELOG.md' {
+        $changelog = Get-Content -Path (Join-Path -Path $repoRoot -ChildPath 'CHANGELOG.md')
+        $latest = $changelog |
+            Where-Object { $_ -match '^## \[(\d+\.\d+\.\d+)\]' } |
+            Select-Object -First 1 |
+            ForEach-Object { [version]($_ -replace '^## \[(\d+\.\d+\.\d+)\].*$', '$1') }
+        $latest | Should -Not -BeNullOrEmpty -Because 'CHANGELOG.md needs a released version section'
+        $manifest.Version | Should -Be $latest
+    }
+
     It 'lists the exported functions explicitly, without wildcard' {
         $raw = Import-PowerShellDataFile -Path $manifestPath
         $raw.FunctionsToExport | Should -Not -Contain '*'
