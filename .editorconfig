@@ -1,0 +1,20 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Windows PowerShell 5.1 reads a file without BOM as the ANSI code page:
+# keep scripts ASCII only, or save them as UTF-8 with BOM
+[*.{ps1,psm1,psd1}]
+charset = utf-8-bom
+end_of_line = crlf
+
+[*.{yml,yaml,json,jsonc}]
+indent_size = 2
+
+[*.md]
+end_of_line = lf
+trim_trailing_whitespace = false

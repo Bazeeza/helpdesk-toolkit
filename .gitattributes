@@ -1,0 +1,12 @@
+# Normalize line endings in the repository
+* text=auto
+
+# PowerShell files are checked out with CRLF, the native format of
+# Windows PowerShell 5.1 and of the editors technicians use on Windows
+*.ps1  text eol=crlf
+*.psm1 text eol=crlf
+*.psd1 text eol=crlf
+
+# YAML and Markdown stay LF for GitHub Actions and the linters
+*.yml  text eol=lf
+*.md   text eol=lf
