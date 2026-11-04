@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207-2b9dff?style=flat-square&logo=powershell&logoColor=white" alt="Windows PowerShell 5.1 and PowerShell 7"/>
   <img src="https://img.shields.io/badge/Tests-Pester%205-3fe0a0?style=flat-square" alt="Tested with Pester 5"/>
   <img src="https://img.shields.io/badge/License-MIT-555?style=flat-square" alt="MIT License"/>
-  <img src="https://img.shields.io/badge/Author-bazeeza%20Bazeeza-c792ea?style=flat-square" alt="Author: bazeeza"/>
+  <img src="https://img.shields.io/badge/Author-bazeeza-c792ea?style=flat-square" alt="Author: bazeeza"/>
   <br>
   <a href="https://github.com/Bazeeza/helpdesk-toolkit/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Bazeeza/helpdesk-toolkit/ci.yml?branch=main&style=flat-square&label=CI" alt="CI status"/></a>
   <a href="https://github.com/Bazeeza/helpdesk-toolkit/actions/workflows/markdown.yml"><img src="https://img.shields.io/github/actions/workflow/status/Bazeeza/helpdesk-toolkit/markdown.yml?branch=main&style=flat-square&label=Markdown" alt="Markdown CI status"/></a>
