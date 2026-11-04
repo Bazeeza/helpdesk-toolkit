@@ -15,6 +15,9 @@
     PowerShellVersion    = '5.1'
     CompatiblePSEditions = @('Desktop', 'Core')
 
+    # Default console view of the report objects (all properties are kept)
+    TypesToProcess       = @('HelpdeskToolkit.Types.ps1xml')
+
     # Exports are listed explicitly: PowerShell can then discover the
     # commands without loading the module, and nothing private leaks out.
     # Tests/Module.Tests.ps1 checks that this list matches the Public folder.

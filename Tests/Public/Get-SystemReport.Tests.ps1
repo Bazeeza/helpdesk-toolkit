@@ -134,6 +134,14 @@ Describe 'Get-SystemReport' {
             $report.CollectedAt | Should -Be ([datetime]'2026-11-04T10:30:00')
         }
 
+        It 'shows a short default view in the console but keeps every property' {
+            $default = $report.PSStandardMembers.DefaultDisplayPropertySet.ReferencedPropertyNames
+            $default | Should -Contain 'SerialNumber'
+            $default | Should -Contain 'UptimeText'
+            $default | Should -Not -Contain 'MemoryBytes'
+            $report.PSObject.Properties.Name | Should -Contain 'MemoryBytes'
+        }
+
         It 'asks Win32_LogicalDisk for local fixed disks only' {
             Should -Invoke -CommandName 'Get-CimInstance' -ModuleName 'HelpdeskToolkit' -Times 1 -Exactly -ParameterFilter {
                 $ClassName -eq 'Win32_LogicalDisk' -and $Filter -eq 'DriveType = 3'

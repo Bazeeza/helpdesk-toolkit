@@ -67,6 +67,10 @@ Type name: `HelpdeskToolkit.SystemReport`.
 
 Each disk has `Drive`, `Label`, `FileSystem`, `Size`, `Free`, `FreePercent`, `SizeBytes` and `FreeBytes`. In the list view a disk is displayed as one line: `C: 100 GB free of 465.76 GB (21.5 %)`.
 
+### Default view
+
+The console shows a short selection (`ComputerName`, `Manufacturer`, `Model`, `SerialNumber`, `OperatingSystem`, `Build`, `Processor`, `Memory`, `MemoryUsedPercent`, `Disks`, `UptimeText`), defined in `HelpdeskToolkit.Types.ps1xml`. The object still has every property: use `Get-SystemReport | Select-Object *` to see them all. `Disks` is a nested list, so expand it (`Select-Object -ExpandProperty Disks`) before sending it to `Export-Csv`.
+
 > [!NOTE]
 > Sizes use binary units (1 GB = 1024 MB), like File Explorer. A disk sold as "500 GB" (decimal units) is therefore shown as `465.76 GB`. `Memory` is the memory usable by Windows, which can be slightly lower than the installed memory when part of it is reserved by the hardware or the graphics chip.
 

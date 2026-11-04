@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Default properties shown in the console. The objects keep every property:
+    Select-Object *, Export-Csv and the HTML report still see all of them.
+-->
+<Types>
+  <Type>
+    <Name>HelpdeskToolkit.SystemReport</Name>
+    <Members>
+      <MemberSet>
+        <Name>PSStandardMembers</Name>
+        <Members>
+          <PropertySet>
+            <Name>DefaultDisplayPropertySet</Name>
+            <ReferencedProperties>
+              <Name>ComputerName</Name>
+              <Name>Manufacturer</Name>
+              <Name>Model</Name>
+              <Name>SerialNumber</Name>
+              <Name>OperatingSystem</Name>
+              <Name>Build</Name>
+              <Name>Processor</Name>
+              <Name>Memory</Name>
+              <Name>MemoryUsedPercent</Name>
+              <Name>Disks</Name>
+              <Name>UptimeText</Name>
+            </ReferencedProperties>
+          </PropertySet>
+        </Members>
+      </MemberSet>
+    </Members>
+  </Type>
+  <Type>
+    <Name>HelpdeskToolkit.SystemReport.Disk</Name>
+    <Members>
+      <MemberSet>
+        <Name>PSStandardMembers</Name>
+        <Members>
+          <PropertySet>
+            <Name>DefaultDisplayPropertySet</Name>
+            <ReferencedProperties>
+              <Name>Drive</Name>
+              <Name>Size</Name>
+              <Name>Free</Name>
+              <Name>FreePercent</Name>
+            </ReferencedProperties>
+          </PropertySet>
+        </Members>
+      </MemberSet>
+    </Members>
+  </Type>
+</Types>
