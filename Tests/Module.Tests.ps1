@@ -65,6 +65,15 @@ Describe 'Module manifest' {
         $manifest.Version | Should -Be $latest
     }
 
+    It 'loads type files that exist and are valid XML' {
+        $raw = Import-PowerShellDataFile -Path $manifestPath
+        foreach ($typeFile in @($raw.TypesToProcess)) {
+            $typePath = Join-Path -Path $moduleRoot -ChildPath $typeFile
+            $typePath | Should -Exist
+            { [xml](Get-Content -Path $typePath -Raw) } | Should -Not -Throw
+        }
+    }
+
     It 'lists the exported functions explicitly, without wildcard' {
         $raw = Import-PowerShellDataFile -Path $manifestPath
         $raw.FunctionsToExport | Should -Not -Contain '*'

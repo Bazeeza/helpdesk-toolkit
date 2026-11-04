@@ -6,6 +6,7 @@
 *.ps1  text eol=crlf
 *.psm1 text eol=crlf
 *.psd1 text eol=crlf
+*.ps1xml text eol=crlf
 
 # YAML and Markdown stay LF for GitHub Actions and the linters
 *.yml  text eol=lf

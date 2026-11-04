@@ -9,14 +9,14 @@
   <img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207-2b9dff?style=flat-square&logo=powershell&logoColor=white" alt="Windows PowerShell 5.1 and PowerShell 7"/>
   <img src="https://img.shields.io/badge/Tests-Pester%205-3fe0a0?style=flat-square" alt="Tested with Pester 5"/>
   <img src="https://img.shields.io/badge/License-MIT-555?style=flat-square" alt="MIT License"/>
-  <img src="https://img.shields.io/badge/Author-bazeeza%20Bazeeza-c792ea?style=flat-square" alt="Author: bazeeza"/>
+  <img src="https://img.shields.io/badge/Author-bazeeza-c792ea?style=flat-square" alt="Author: bazeeza"/>
   <br>
   <a href="https://github.com/Bazeeza/helpdesk-toolkit/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Bazeeza/helpdesk-toolkit/ci.yml?branch=main&style=flat-square&label=CI" alt="CI status"/></a>
   <a href="https://github.com/Bazeeza/helpdesk-toolkit/actions/workflows/markdown.yml"><img src="https://img.shields.io/github/actions/workflow/status/Bazeeza/helpdesk-toolkit/markdown.yml?branch=main&style=flat-square&label=Markdown" alt="Markdown CI status"/></a>
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/Version-0.1.0-ffb454?style=flat-square" alt="Version 0.1.0"/></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/Version-0.2.0-ffb454?style=flat-square" alt="Version 0.2.0"/></a>
 </p>
 
-> **En bref (français) :** module PowerShell de diagnostic pour le soutien technique, compatible avec Windows PowerShell 5.1 (le shell présent sur tous les postes Windows). Chaque commande lit l'état du poste sans le modifier et renvoie des objets réutilisables (CSV, rapport HTML). Le code est vérifié à chaque modification : PSScriptAnalyzer, tests Pester sous PowerShell 5.1 et 7. **Version 0.1.0 :** ossature, tests et CI ; les commandes arrivent une à une (voir la feuille de route).
+> **En bref (français) :** module PowerShell de diagnostic pour le soutien technique, compatible avec Windows PowerShell 5.1 (le shell présent sur tous les postes Windows). Chaque commande lit l'état du poste sans le modifier et renvoie des objets réutilisables (CSV, rapport HTML). Le code est vérifié à chaque modification : PSScriptAnalyzer, tests Pester sous PowerShell 5.1 et 7. **Version 0.2.0 :** première commande, `Get-SystemReport` (Windows, matériel, numéro de série, mémoire, disques, temps depuis le dernier démarrage) ; les autres commandes arrivent une à une (voir la feuille de route).
 
 ---
 
@@ -70,14 +70,29 @@ Import-Module .\HelpdeskToolkit\HelpdeskToolkit.psd1
 Get-Command -Module HelpdeskToolkit
 ```
 
+### First ticket check: Get-SystemReport
+
+```powershell
+# Windows edition and build, model, serial number, memory, disks and uptime
+Get-SystemReport
+
+# Has the computer really restarted this week?
+Get-SystemReport | Where-Object { $_.Uptime.TotalDays -gt 7 }
+
+# Free space of each fixed disk, as a table
+Get-SystemReport | Select-Object -ExpandProperty Disks
+```
+
+The console shows a short view; every property stays on the object (`Select-Object *`). All properties, data sources and remote requirements: [docs/commands/Get-SystemReport.md](docs/commands/Get-SystemReport.md).
+
 > [!NOTE]
-> Version 0.1.0 is the skeleton of the module: loader, private helper, tests and CI. It does not export any command yet, so `Get-Command` returns nothing. Commands are added one at a time, each with its tests.
+> Version 0.2.0 exports one command, `Get-SystemReport`. The other commands of the roadmap are added one at a time, each with its tests and its reference page.
 
 ## Roadmap
 
 | Command | What it answers | Status |
 |---|---|---|
-| `Get-SystemReport` | Which Windows, which hardware, how much memory, since when is it running, what is the serial number? | Planned |
+| [`Get-SystemReport`](docs/commands/Get-SystemReport.md) | Which Windows, which hardware, how much memory, since when is it running, what is the serial number? | Available |
 | `Test-NetworkHealth` | Where does the network stop: adapter, IP address or APIPA, gateway, DNS or remote port? | Planned |
 | `Get-InstalledSoftware` | Is the application installed, which version, since when? Read from the registry, exported to CSV | Planned |
 | `Get-DiskHealth` | How much free space is left, and does the disk report a health problem? | Planned |
@@ -106,7 +121,7 @@ The same analysis and tests run on a workstation with one command:
 helpdesk-toolkit/
 ├── HelpdeskToolkit/        the module: manifest, loader, Public and Private functions
 ├── Tests/                  Pester tests and analyzer settings for the tests
-├── docs/                   architecture and design decisions
+├── docs/                   architecture, design decisions and one page per command
 ├── Invoke-Tests.ps1        PSScriptAnalyzer and Pester, locally and in the CI
 ├── CHANGELOG.md            what changed in each version
 └── CONTRIBUTING.md         how to add a command and the rules it must follow

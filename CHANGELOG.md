@@ -5,6 +5,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-04
+
+First public command.
+
+### Added
+
+- `Get-SystemReport`: Windows edition, version and build, manufacturer, model, serial number, firmware version, processors, memory, local fixed disks, last boot time and uptime, read from five CIM classes. Works on the local computer without WinRM and on remote computers through WinRM; an unreachable computer is reported as a non-terminating error.
+- Private helper `Format-Uptime`: short uptime text such as `12d 4h 7m`.
+- `HelpdeskToolkit.Types.ps1xml`: short default console view for system reports and disks.
+- Pester tests for `Get-SystemReport` with mocked CIM classes, and for `Format-Uptime`.
+- Reference page [docs/commands/Get-SystemReport.md](docs/commands/Get-SystemReport.md).
+
+### Changed
+
+- Author name in the license, manifest and README is now `bazeeza`.
+- Type files are checked out with CRLF and tested as valid XML.
+
 ## [0.1.0] - 2026-11-03
 
 First skeleton of the module: structure, tests and CI, no public command yet.
