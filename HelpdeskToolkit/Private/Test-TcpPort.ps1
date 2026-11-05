@@ -8,8 +8,8 @@ function Test-TcpPort {
         with System.Net.Sockets.TcpClient, waits at most TimeoutMilliseconds,
         then closes it. Nothing is sent to the remote service.
 
-        Test-NetConnection -Port gives the same answer but always sends a ping
-        first and waits about 20 seconds before reporting a filtered port.
+        Test-NetConnection -Port gives the same answer but also pings the
+        host and can wait about 20 seconds before reporting a filtered port.
         A short timeout keeps the network check fast when a firewall drops
         the packets instead of refusing them.
 
