@@ -5,6 +5,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-05
+
+Network diagnosis.
+
+### Added
+
+- `Test-NetworkHealth`: the six steps of the network troubleshooting runbook on the local computer (link, IPv4 address or APIPA, default gateway, public IP address, DNS resolution, TCP port of a service). Returns the status of each step (`Pass`, `Warning`, `Fail`, `Skipped`), the first step that failed and a diagnosis. A ping that fails while a higher test succeeds is a `Warning`, not a failure.
+- Private helpers `Test-IcmpEcho` (.NET `Ping` class) and `Test-TcpPort` (.NET `TcpClient` with a timeout), identical in Windows PowerShell 5.1 and PowerShell 7.
+- Default console views for network health results and their checks.
+- Pester tests for `Test-NetworkHealth` with a mocked network stack, and loopback tests for the two helpers.
+- Reference page [docs/commands/Test-NetworkHealth.md](docs/commands/Test-NetworkHealth.md).
+
 ## [0.2.0] - 2026-11-04
 
 First public command.
