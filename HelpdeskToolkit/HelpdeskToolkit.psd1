@@ -23,6 +23,7 @@
     # Tests/Module.Tests.ps1 checks that this list matches the Public folder.
     FunctionsToExport    = @(
         'Get-SystemReport'
+        'Test-NetworkHealth'
     )
     CmdletsToExport      = @()
     VariablesToExport    = @()
