@@ -16,7 +16,7 @@
   <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/Version-0.2.0-ffb454?style=flat-square" alt="Version 0.2.0"/></a>
 </p>
 
-> **En bref (français) :** module PowerShell de diagnostic pour le soutien technique, compatible avec Windows PowerShell 5.1 (le shell présent sur tous les postes Windows). Chaque commande lit l'état du poste sans le modifier et renvoie des objets réutilisables (CSV, rapport HTML). Le code est vérifié à chaque modification : PSScriptAnalyzer, tests Pester sous PowerShell 5.1 et 7. **Version 0.2.0 :** première commande, `Get-SystemReport` (Windows, matériel, numéro de série, mémoire, disques, temps depuis le dernier démarrage) ; les autres commandes arrivent une à une (voir la feuille de route).
+> **En bref (français) :** module PowerShell de diagnostic pour le soutien technique, compatible avec Windows PowerShell 5.1 (le shell présent sur tous les postes Windows). Chaque commande lit l'état du poste sans le modifier et renvoie des objets réutilisables (CSV, rapport HTML). Le code est vérifié à chaque modification : PSScriptAnalyzer, tests Pester sous PowerShell 5.1 et 7. **Version 0.3.0 :** `Get-SystemReport` (Windows, matériel, numéro de série, mémoire, disques, temps depuis le dernier démarrage) et `Test-NetworkHealth` (diagnostic réseau couche par couche : lien, adresse IP ou APIPA, passerelle, Internet, DNS, port TCP, avec la couche en panne et sa cause probable) ; les autres commandes arrivent une à une (voir la feuille de route).
 
 ---
 
@@ -85,21 +85,36 @@ Get-SystemReport | Select-Object -ExpandProperty Disks
 
 The console shows a short view; every property stays on the object (`Select-Object *`). All properties, data sources and remote requirements: [docs/commands/Get-SystemReport.md](docs/commands/Get-SystemReport.md).
 
+### "I have no Internet": Test-NetworkHealth
+
+```powershell
+# Link, IPv4 address or APIPA, gateway, public IP, DNS and HTTPS port, in that order
+Test-NetworkHealth
+
+# The six steps as a table: Pass, Warning, Fail or Skipped
+Test-NetworkHealth | Select-Object -ExpandProperty Checks
+
+# Can this computer reach the network printer on its printing port?
+Test-NetworkHealth -TargetHost 'print01.corp.example.com' -Port 9100
+```
+
+The result names the first layer that failed (`FailedStep`) and what it means (`Diagnosis`), for example *DHCP problem* for an address in `169.254.x.x`. A gateway that ignores ping is reported as a `Warning` when traffic still goes through. Steps, statuses and design choices: [docs/commands/Test-NetworkHealth.md](docs/commands/Test-NetworkHealth.md).
+
 > [!NOTE]
-> Version 0.2.0 exports one command, `Get-SystemReport`. The other commands of the roadmap are added one at a time, each with its tests and its reference page.
+> Version 0.3.0 exports two commands, `Get-SystemReport` and `Test-NetworkHealth`. The other commands of the roadmap are added one at a time, each with its tests and its reference page.
 
 ## Roadmap
 
 | Command | What it answers | Status |
 |---|---|---|
 | [`Get-SystemReport`](docs/commands/Get-SystemReport.md) | Which Windows, which hardware, how much memory, since when is it running, what is the serial number? | Available |
-| `Test-NetworkHealth` | Where does the network stop: adapter, IP address or APIPA, gateway, DNS or remote port? | Planned |
+| [`Test-NetworkHealth`](docs/commands/Test-NetworkHealth.md) | Where does the network stop: adapter, IP address or APIPA, gateway, Internet, DNS or remote port? | Available |
 | `Get-InstalledSoftware` | Is the application installed, which version, since when? Read from the registry, exported to CSV | Planned |
 | `Get-DiskHealth` | How much free space is left, and does the disk report a health problem? | Planned |
 | `Clear-TempFiles` | Free space safely, with `-WhatIf` to preview and `-Confirm` to approve | Planned |
 | `Export-HelpdeskReport` | One self-contained HTML file to attach to the ticket | Planned |
 
-`Test-NetworkHealth` automates the layer-by-layer method of the [Network Troubleshooting runbook](https://github.com/Bazeeza/Technical-Runbooks/blob/main/04-Network-Troubleshooting/README.md) from [Technical Runbooks](https://github.com/Bazeeza/Technical-Runbooks).
+`Test-NetworkHealth` automates the six steps of the layer-by-layer method of the [Network Troubleshooting runbook](https://github.com/Bazeeza/Technical-Runbooks/blob/main/04-Network-Troubleshooting/README.md) from [Technical Runbooks](https://github.com/Bazeeza/Technical-Runbooks).
 
 ## Quality checks
 
