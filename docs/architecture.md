@@ -11,7 +11,8 @@ helpdesk-toolkit/
 │   ├── HelpdeskToolkit.psm1      Root module: loads Private, then Public, exports Public
 │   ├── HelpdeskToolkit.Types.ps1xml  Default console view of the report objects
 │   ├── Public/                   One exported command per file, file name = command name
-│   └── Private/                  Internal helpers, never exported (Format-ByteSize, Format-Uptime)
+│   └── Private/                  Internal helpers, never exported (Format-ByteSize, Format-Uptime,
+│                                 Test-IcmpEcho, Test-TcpPort)
 ├── Tests/
 │   ├── Module.Tests.ps1          Rules every command must follow (help, verb, encoding...)
 │   ├── Private/                  One test file per private helper
@@ -57,6 +58,9 @@ A file that fails to load stops the import with its name in the error message, i
 | **CIM, not WMI cmdlets** | `Get-CimInstance` works in Windows PowerShell 5.1 and PowerShell 7; `Get-WmiObject` does not exist in PowerShell 7. Remote queries use WinRM instead of DCOM. |
 | **Short default view, full object** | A types file chooses the properties shown in the console. Every property stays on the object for `Select-Object *`, CSV and the HTML report. |
 | **One unreachable computer does not stop the others** | Remote failures are non-terminating errors that name the computer. `-ErrorAction Stop` restores the stop-at-first-error behaviour. |
+| **Network tests through small .NET helpers** | `Test-IcmpEcho` (class `Ping`) and `Test-TcpPort` (class `TcpClient`) behave the same in 5.1 and 7 and stop after a short timeout. `Test-Connection` changed in PowerShell 7, and `Test-NetConnection` can wait about 20 seconds on a filtered port. Being private functions, they are also easy to mock in the tests. |
+| **A diagnosis, not only a status** | `Test-NetworkHealth` returns the first layer that failed and what it means (`DHCP problem`, `DNS problem`...), the sentence a technician writes in the ticket. |
+| **Tests and examples use documentation values** | Fictitious computers (`PC-EXAMPLE01`), the address range `192.0.2.0/24` (RFC 5737) and the MAC block `00-00-5E-00-53-xx` (RFC 7042): no real serial number, address or host name ends up in the repository. |
 
 ## Commands
 
@@ -65,13 +69,13 @@ The module is built one command at a time, each with its tests and documentation
 | Command | Purpose | Status |
 |---|---|---|
 | [`Get-SystemReport`](commands/Get-SystemReport.md) | Operating system, CPU, memory, disks, uptime and serial number in one object | Available (0.2.0) |
-| `Test-NetworkHealth` | The steps of the network troubleshooting runbook, automated: adapter, IP address or APIPA, gateway, DNS, TCP port | Planned |
+| [`Test-NetworkHealth`](commands/Test-NetworkHealth.md) | The steps of the network troubleshooting runbook, automated: adapter, IP address or APIPA, gateway, public IP, DNS, TCP port | Available (0.3.0) |
 | `Get-InstalledSoftware` | Installed programs read from the registry, with CSV export | Planned |
 | `Get-DiskHealth` | Free space and physical disk health status | Planned |
 | `Clear-TempFiles` | Remove temporary files, with mandatory `-WhatIf` and `-Confirm` support | Planned |
 | `Export-HelpdeskReport` | A self-contained HTML report that combines the commands above | Planned |
 
-`Test-NetworkHealth` will follow the layer-by-layer method of the [Network Troubleshooting runbook](https://github.com/Bazeeza/Technical-Runbooks/blob/main/04-Network-Troubleshooting/README.md) of the Technical Runbooks repository.
+`Test-NetworkHealth` follows the layer-by-layer method of the [Network Troubleshooting runbook](https://github.com/Bazeeza/Technical-Runbooks/blob/main/04-Network-Troubleshooting/README.md) of the Technical Runbooks repository.
 
 ### Why the registry and not `Win32_Product`
 
