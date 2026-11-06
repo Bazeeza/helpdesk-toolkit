@@ -92,4 +92,25 @@
       </MemberSet>
     </Members>
   </Type>
+  <Type>
+    <Name>HelpdeskToolkit.InstalledSoftware</Name>
+    <Members>
+      <MemberSet>
+        <Name>PSStandardMembers</Name>
+        <Members>
+          <PropertySet>
+            <Name>DefaultDisplayPropertySet</Name>
+            <ReferencedProperties>
+              <Name>Name</Name>
+              <Name>Version</Name>
+              <Name>Publisher</Name>
+              <Name>InstallDate</Name>
+              <Name>Scope</Name>
+              <Name>Architecture</Name>
+            </ReferencedProperties>
+          </PropertySet>
+        </Members>
+      </MemberSet>
+    </Members>
+  </Type>
 </Types>
