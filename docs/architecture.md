@@ -11,8 +11,8 @@ helpdesk-toolkit/
 │   ├── HelpdeskToolkit.psm1      Root module: loads Private, then Public, exports Public
 │   ├── HelpdeskToolkit.Types.ps1xml  Default console view of the report objects
 │   ├── Public/                   One exported command per file, file name = command name
-│   └── Private/                  Internal helpers, never exported (Format-ByteSize, Format-Uptime,
-│                                 Test-IcmpEcho, Test-TcpPort)
+│   └── Private/                  Internal helpers, never exported (ConvertTo-InstallDate, Format-ByteSize,
+│                                 Format-Uptime, Get-UninstallRegistryEntry, Test-IcmpEcho, Test-TcpPort)
 ├── Tests/
 │   ├── Module.Tests.ps1          Rules every command must follow (help, verb, encoding...)
 │   ├── Private/                  One test file per private helper
@@ -60,6 +60,9 @@ A file that fails to load stops the import with its name in the error message, i
 | **One unreachable computer does not stop the others** | Remote failures are non-terminating errors that name the computer. `-ErrorAction Stop` restores the stop-at-first-error behaviour. |
 | **Network tests through small .NET helpers** | `Test-IcmpEcho` (class `Ping`) and `Test-TcpPort` (class `TcpClient`) behave the same in 5.1 and 7 and stop after a short timeout. `Test-Connection` changed in PowerShell 7, and `Test-NetConnection` can wait about 20 seconds on a filtered port. Being private functions, they are also easy to mock in the tests. |
 | **A diagnosis, not only a status** | `Test-NetworkHealth` returns the first layer that failed and what it means (`DHCP problem`, `DNS problem`...), the sentence a technician writes in the ticket. |
+| **Registry read through an explicit view** | `Get-UninstallRegistryEntry` opens `HKLM` with `RegistryKey.OpenBaseKey` and the 64-bit or 32-bit view. The `HKLM:` drive would follow the registry redirector: in a 32-bit PowerShell, `HKLM:\SOFTWARE` silently shows `WOW6432Node`, and the 64-bit programs disappear from the list. |
+| **Only the edge of the system is mocked** | Each command reaches Windows through a few calls (CIM classes, network cmdlets, one registry helper). The tests replace those calls with fictitious data and check everything else for real; the registry helper itself is tested against a temporary key in Pester's `TestRegistry:` drive. |
+| **Culture-independent parsing** | Dates written as text by installers (`20260115`, `1/15/2026`) are parsed with the invariant culture, so a French-Canadian workstation gives the same date as an English one. A value that cannot be read stays empty instead of becoming a wrong date. |
 | **Tests and examples use documentation values** | Fictitious computers (`PC-EXAMPLE01`), the address range `192.0.2.0/24` (RFC 5737) and the MAC block `00-00-5E-00-53-xx` (RFC 7042): no real serial number, address or host name ends up in the repository. |
 
 ## Commands
@@ -70,7 +73,7 @@ The module is built one command at a time, each with its tests and documentation
 |---|---|---|
 | [`Get-SystemReport`](commands/Get-SystemReport.md) | Operating system, CPU, memory, disks, uptime and serial number in one object | Available (0.2.0) |
 | [`Test-NetworkHealth`](commands/Test-NetworkHealth.md) | The steps of the network troubleshooting runbook, automated: adapter, IP address or APIPA, gateway, public IP, DNS, TCP port | Available (0.3.0) |
-| `Get-InstalledSoftware` | Installed programs read from the registry, with CSV export | Planned |
+| [`Get-InstalledSoftware`](commands/Get-InstalledSoftware.md) | Installed programs read from the 64-bit, 32-bit and per-user uninstall keys, flat objects ready for CSV | Available (0.4.0) |
 | `Get-DiskHealth` | Free space and physical disk health status | Planned |
 | `Clear-TempFiles` | Remove temporary files, with mandatory `-WhatIf` and `-Confirm` support | Planned |
 | `Export-HelpdeskReport` | A self-contained HTML report that combines the commands above | Planned |
@@ -79,7 +82,7 @@ The module is built one command at a time, each with its tests and documentation
 
 ### Why the registry and not `Win32_Product`
 
-`Get-InstalledSoftware` will read the uninstall keys of the registry. Querying the WMI class `Win32_Product` looks simpler but makes Windows Installer enumerate every MSI package and start a consistency check that can **reconfigure installed applications** (event 1035 in the Application log) and slow the computer down. A diagnostic tool must never change the computer it diagnoses.
+`Get-InstalledSoftware` reads the uninstall keys of the registry. Querying the WMI class `Win32_Product` looks simpler but makes Windows Installer enumerate every MSI package and start a consistency check that can **reconfigure installed applications** (event 1035 in the Application log) and slow the computer down. A diagnostic tool must never change the computer it diagnoses. A Pester test checks that the command never calls `Get-CimInstance`; details in [the command page](commands/Get-InstalledSoftware.md#design-choices).
 
 ---
 
