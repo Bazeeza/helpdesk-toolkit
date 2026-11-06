@@ -16,7 +16,7 @@
   <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/Version-0.3.0-ffb454?style=flat-square" alt="Version 0.3.0"/></a>
 </p>
 
-> **En bref (français) :** module PowerShell de diagnostic pour le soutien technique, compatible avec Windows PowerShell 5.1 (le shell présent sur tous les postes Windows). Chaque commande lit l'état du poste sans le modifier et renvoie des objets réutilisables (CSV, rapport HTML). Le code est vérifié à chaque modification : PSScriptAnalyzer, tests Pester sous PowerShell 5.1 et 7. **Version 0.3.0 :** `Get-SystemReport` (Windows, matériel, numéro de série, mémoire, disques, temps depuis le dernier démarrage) et `Test-NetworkHealth` (diagnostic réseau couche par couche : lien, adresse IP ou APIPA, passerelle, Internet, DNS, port TCP, avec la couche en panne et sa cause probable) ; les autres commandes arrivent une à une (voir la feuille de route).
+> **En bref (français) :** module PowerShell de diagnostic pour le soutien technique, compatible avec Windows PowerShell 5.1 (le shell présent sur tous les postes Windows). Chaque commande lit l'état du poste sans le modifier et renvoie des objets réutilisables (CSV, rapport HTML). Le code est vérifié à chaque modification : PSScriptAnalyzer, tests Pester sous PowerShell 5.1 et 7. **Version 0.3.0 :** `Get-SystemReport` (Windows, matériel, numéro de série, mémoire, disques, temps depuis le dernier démarrage) et `Test-NetworkHealth` (diagnostic réseau couche par couche : lien, adresse IP ou APIPA, passerelle, Internet, DNS, port TCP, avec la couche en panne et sa cause probable). **Version 0.4.0 :** `Get-InstalledSoftware` (logiciels installés lus dans le registre, 64 bits, 32 bits et par utilisateur, prêts pour un export CSV, sans jamais interroger `Win32_Product`, qui peut lancer une réparation des paquets MSI) ; les autres commandes arrivent une à une (voir la feuille de route).
 
 ---
 
@@ -100,8 +100,23 @@ Test-NetworkHealth -TargetHost 'print01.corp.example.com' -Port 9100
 
 The result names the first layer that failed (`FailedStep`) and what it means (`Diagnosis`), for example *DHCP problem* for an address in `169.254.x.x`. A gateway that ignores ping is reported as a `Warning` when traffic still goes through. Steps, statuses and design choices: [docs/commands/Test-NetworkHealth.md](docs/commands/Test-NetworkHealth.md).
 
+### "Is it installed, which version?": Get-InstalledSoftware
+
+```powershell
+# Is a browser installed, which version and since when?
+Get-InstalledSoftware -Name '*Chrome*', '*Firefox*'
+
+# What changed last? The ten most recently installed or updated programs
+Get-InstalledSoftware | Sort-Object -Property InstallDate -Descending | Select-Object -First 10
+
+# Software inventory as a CSV file for the ticket
+Get-InstalledSoftware | Export-Csv -Path .\software.csv -NoTypeInformation -Encoding UTF8
+```
+
+The list is the one of *Programs and Features*: 64-bit, 32-bit (`WOW6432Node`) and per-user programs, read from the registry. The command never queries `Win32_Product`, which makes Windows Installer check and possibly repair every MSI package. Sources, hidden entries and output: [docs/commands/Get-InstalledSoftware.md](docs/commands/Get-InstalledSoftware.md).
+
 > [!NOTE]
-> Version 0.3.0 exports two commands, `Get-SystemReport` and `Test-NetworkHealth`. The other commands of the roadmap are added one at a time, each with its tests and its reference page.
+> Version 0.4.0 exports three commands, `Get-SystemReport`, `Test-NetworkHealth` and `Get-InstalledSoftware`. The other commands of the roadmap are added one at a time, each with its tests and its reference page.
 
 ## Roadmap
 
@@ -109,7 +124,7 @@ The result names the first layer that failed (`FailedStep`) and what it means (`
 |---|---|---|
 | [`Get-SystemReport`](docs/commands/Get-SystemReport.md) | Which Windows, which hardware, how much memory, since when is it running, what is the serial number? | Available |
 | [`Test-NetworkHealth`](docs/commands/Test-NetworkHealth.md) | Where does the network stop: adapter, IP address or APIPA, gateway, Internet, DNS or remote port? | Available |
-| `Get-InstalledSoftware` | Is the application installed, which version, since when? Read from the registry, exported to CSV | Planned |
+| [`Get-InstalledSoftware`](docs/commands/Get-InstalledSoftware.md) | Is the application installed, which version, since when? Read from the registry, never `Win32_Product`, ready for CSV | Available |
 | `Get-DiskHealth` | How much free space is left, and does the disk report a health problem? | Planned |
 | `Clear-TempFiles` | Free space safely, with `-WhatIf` to preview and `-Confirm` to approve | Planned |
 | `Export-HelpdeskReport` | One self-contained HTML file to attach to the ticket | Planned |
