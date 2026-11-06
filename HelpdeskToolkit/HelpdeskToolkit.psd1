@@ -3,7 +3,7 @@
     RootModule           = 'HelpdeskToolkit.psm1'
 
     # Semantic versioning: MAJOR.MINOR.PATCH (see CHANGELOG.md)
-    ModuleVersion        = '0.3.0'
+    ModuleVersion        = '0.4.0'
 
     GUID                 = '5b72467c-151e-46b5-83b9-469abcf3586b'
     Author               = 'bazeeza'
@@ -22,6 +22,7 @@
     # commands without loading the module, and nothing private leaks out.
     # Tests/Module.Tests.ps1 checks that this list matches the Public folder.
     FunctionsToExport    = @(
+        'Get-InstalledSoftware'
         'Get-SystemReport'
         'Test-NetworkHealth'
     )

@@ -16,7 +16,8 @@ jobs:
     name: PSScriptAnalyzer
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # v5 and later run on Node.js 24; v4 targets Node.js 20, deprecated on the runners
+      - uses: actions/checkout@v5
 
       - name: Install PSScriptAnalyzer
         shell: pwsh
@@ -41,7 +42,7 @@ jobs:
       run:
         shell: ${{ matrix.shell }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Windows ships Pester 3.4; the tests need Pester 5. Major version 6
       # is excluded until the tests are checked against it.
@@ -55,7 +56,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: pester-results-${{ matrix.shell }}
           path: testResults.xml
