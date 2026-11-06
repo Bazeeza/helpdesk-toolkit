@@ -5,6 +5,27 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-06
+
+Software inventory.
+
+### Added
+
+- `Get-InstalledSoftware`: programs of the local computer read from the 64-bit, 32-bit (`WOW6432Node`) and current user uninstall keys, never from `Win32_Product`. Name, version, publisher, install date, scope, architecture, estimated size, MSI product code and uninstall commands in flat objects ready for `Export-Csv`. Filters by display name with wildcards and by scope; system components and updates are hidden like in Programs and Features unless `-IncludeHidden` is used.
+- Private helper `Get-UninstallRegistryEntry`: reads an uninstall key in an explicit 64-bit or 32-bit registry view, so a 32-bit PowerShell is not redirected.
+- Private helper `ConvertTo-InstallDate`: reads install dates such as `20260115` or `1/15/2026` with the invariant culture.
+- Default console view for installed software.
+- Pester tests for `Get-InstalledSoftware` with mocked registry lists, for `Get-UninstallRegistryEntry` against Pester's `TestRegistry:` drive, and for `ConvertTo-InstallDate`.
+- Reference page [docs/commands/Get-InstalledSoftware.md](docs/commands/Get-InstalledSoftware.md).
+
+### Fixed
+
+- The PSScriptAnalyzer job of the CI failed on five findings in the test files (fictitious computer names and `New-Fake*` fixtures). The two rules are now excluded for the tests only, with the reason in `Tests/PSScriptAnalyzerSettings.psd1`.
+
+### Changed
+
+- GitHub Actions use `actions/checkout@v5` and `actions/upload-artifact@v5`, which run on Node.js 24.
+
 ## [0.3.0] - 2026-11-05
 
 Network diagnosis.
