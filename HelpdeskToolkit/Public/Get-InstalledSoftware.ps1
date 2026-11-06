@@ -24,6 +24,10 @@ function Get-InstalledSoftware {
         programs (ParentKeyName or a ReleaseType such as Hotfix). Use
         IncludeHidden to see them.
 
+        For a Windows Installer (MSI) package, InstallDate is the last time
+        the product was installed, patched or repaired, not always the first
+        installation. Many other installers write no date at all.
+
         Each program is one flat object, so the result can be exported with
         Export-Csv without losing information. The command only reads and
         needs no administrator rights. Programs installed by other users in
