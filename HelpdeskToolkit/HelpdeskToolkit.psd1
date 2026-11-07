@@ -22,6 +22,7 @@
     # commands without loading the module, and nothing private leaks out.
     # Tests/Module.Tests.ps1 checks that this list matches the Public folder.
     FunctionsToExport    = @(
+        'Clear-TempFiles'
         'Get-DiskHealth'
         'Get-InstalledSoftware'
         'Get-SystemReport'
