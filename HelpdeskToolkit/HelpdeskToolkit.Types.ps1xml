@@ -175,4 +175,26 @@
       </MemberSet>
     </Members>
   </Type>
+  <Type>
+    <Name>HelpdeskToolkit.TempCleanup</Name>
+    <Members>
+      <MemberSet>
+        <Name>PSStandardMembers</Name>
+        <Members>
+          <PropertySet>
+            <Name>DefaultDisplayPropertySet</Name>
+            <ReferencedProperties>
+              <Name>Location</Name>
+              <Name>FilesFound</Name>
+              <Name>SizeFound</Name>
+              <Name>Cleaned</Name>
+              <Name>FilesRemoved</Name>
+              <Name>FilesSkipped</Name>
+              <Name>Freed</Name>
+            </ReferencedProperties>
+          </PropertySet>
+        </Members>
+      </MemberSet>
+    </Members>
+  </Type>
 </Types>
