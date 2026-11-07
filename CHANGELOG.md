@@ -5,6 +5,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-07
+
+Disk health and safe cleanup.
+
+### Added
+
+- `Get-DiskHealth`: free space of every local fixed volume against two thresholds (`-WarningPercent` 15 and `-CriticalPercent` 5 by default), health and operational status reported by every physical disk (`MSFT_PhysicalDisk`), and, in an elevated session, temperature, wear, power-on hours and uncorrected errors (`MSFT_StorageReliabilityCounter`). One overall status (`OK`, `Unknown`, `Warning`, `Critical`) and one line per issue.
+- `Clear-TempFiles`: removes files older than `-OlderThanDays` (7 by default) from the temporary folder of the current user and, optionally, `C:\Windows\Temp`. Supports `-WhatIf` and `-Confirm` with a `High` impact, so it asks by default. Fixed locations only, five safety checks on the path, links never followed, files in use skipped and counted.
+- Private helpers `ConvertFrom-StorageCode` (documented storage codes to text), `Get-StorageReliability` (reliability counters or nothing), `Get-TempFileCandidate` (folder walk that never enters a link) and `Get-TempLocation` (the fixed cleanup folders).
+- Default console views for disk health results, volumes, physical disks and cleanup results.
+- Pester tests for both commands and the four helpers; the cleanup tests remove real files in Pester's `TestDrive` only.
+- Reference pages [docs/commands/Get-DiskHealth.md](docs/commands/Get-DiskHealth.md) and [docs/commands/Clear-TempFiles.md](docs/commands/Clear-TempFiles.md).
+
 ## [0.4.0] - 2026-11-06
 
 Software inventory.

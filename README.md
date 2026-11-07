@@ -13,10 +13,10 @@
   <br>
   <a href="https://github.com/Bazeeza/helpdesk-toolkit/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Bazeeza/helpdesk-toolkit/ci.yml?branch=main&style=flat-square&label=CI" alt="CI status"/></a>
   <a href="https://github.com/Bazeeza/helpdesk-toolkit/actions/workflows/markdown.yml"><img src="https://img.shields.io/github/actions/workflow/status/Bazeeza/helpdesk-toolkit/markdown.yml?branch=main&style=flat-square&label=Markdown" alt="Markdown CI status"/></a>
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/Version-0.4.0-ffb454?style=flat-square" alt="Version 0.4.0"/></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/Version-0.5.0-ffb454?style=flat-square" alt="Version 0.5.0"/></a>
 </p>
 
-> **En bref (français) :** module PowerShell de diagnostic pour le soutien technique, compatible avec Windows PowerShell 5.1 (le shell présent sur tous les postes Windows). Chaque commande lit l'état du poste sans le modifier et renvoie des objets réutilisables (CSV, rapport HTML). Le code est vérifié à chaque modification : PSScriptAnalyzer, tests Pester sous PowerShell 5.1 et 7. **Version 0.3.0 :** `Get-SystemReport` (Windows, matériel, numéro de série, mémoire, disques, temps depuis le dernier démarrage) et `Test-NetworkHealth` (diagnostic réseau couche par couche : lien, adresse IP ou APIPA, passerelle, Internet, DNS, port TCP, avec la couche en panne et sa cause probable). **Version 0.4.0 :** `Get-InstalledSoftware` (logiciels installés lus dans le registre, 64 bits, 32 bits et par utilisateur, prêts pour un export CSV, sans jamais interroger `Win32_Product`, qui peut lancer une réparation des paquets MSI) ; les autres commandes arrivent une à une (voir la feuille de route).
+> **En bref (français) :** module PowerShell de diagnostic pour le soutien technique, compatible avec Windows PowerShell 5.1 (le shell présent sur tous les postes Windows). Chaque commande lit l'état du poste sans le modifier et renvoie des objets réutilisables (CSV, rapport HTML). Le code est vérifié à chaque modification : PSScriptAnalyzer, tests Pester sous PowerShell 5.1 et 7. **Version 0.3.0 :** `Get-SystemReport` (Windows, matériel, numéro de série, mémoire, disques, temps depuis le dernier démarrage) et `Test-NetworkHealth` (diagnostic réseau couche par couche : lien, adresse IP ou APIPA, passerelle, Internet, DNS, port TCP, avec la couche en panne et sa cause probable). **Version 0.4.0 :** `Get-InstalledSoftware` (logiciels installés lus dans le registre, 64 bits, 32 bits et par utilisateur, prêts pour un export CSV, sans jamais interroger `Win32_Product`, qui peut lancer une réparation des paquets MSI). **Version 0.5.0 :** `Get-DiskHealth` (espace libre de chaque volume avec seuils d'alerte, état de santé déclaré par chaque disque physique, un statut global et la liste des problèmes) et `Clear-TempFiles`, la seule commande qui modifie le poste : aperçu avec `-WhatIf`, confirmation demandée par défaut, emplacements fixes seulement, liens jamais suivis. Prochaine étape : le rapport HTML.
 
 ---
 
@@ -26,7 +26,7 @@ The first questions of almost every ticket are the same: *which Windows build, h
 
 `HelpdeskToolkit` answers them with commands that:
 
-- **only read** the computer (the single command that cleans files will support `-WhatIf` and `-Confirm`);
+- **only read** the computer (the single command that cleans files, `Clear-TempFiles`, previews with `-WhatIf` and asks before acting);
 - return **objects**, so the same data can be filtered, exported to CSV or put in an HTML report;
 - run in **Windows PowerShell 5.1**, already installed on every Windows 10 and Windows 11 workstation;
 - are **tested** with Pester and mocks, so the tests never depend on the computer they run on.
@@ -115,8 +115,28 @@ Get-InstalledSoftware | Export-Csv -Path .\software.csv -NoTypeInformation -Enco
 
 The list is the one of *Programs and Features*: 64-bit, 32-bit (`WOW6432Node`) and per-user programs, read from the registry. The command never queries `Win32_Product`, which makes Windows Installer check and possibly repair every MSI package. Sources, hidden entries and output: [docs/commands/Get-InstalledSoftware.md](docs/commands/Get-InstalledSoftware.md).
 
+### "My disk is full": Get-DiskHealth and Clear-TempFiles
+
+```powershell
+# Free space of each volume and health reported by each drive, with one overall status
+Get-DiskHealth
+
+# Only the problems, one line each, for the ticket
+Get-DiskHealth | Select-Object -ExpandProperty Issues
+
+# Preview: how much would removing temporary files older than 7 days free? Removes nothing
+Clear-TempFiles -WhatIf
+
+# Do it, after a confirmation
+Clear-TempFiles
+```
+
+`Get-DiskHealth` flags a volume under 15 % (`Warning`) or 5 % (`Critical`) of free space and reads the health status that each physical disk reports; temperature, wear and error counters are added in an elevated session. Rules and output: [docs/commands/Get-DiskHealth.md](docs/commands/Get-DiskHealth.md).
+
+`Clear-TempFiles` is the only command that changes the computer. It cleans fixed temporary folders only, keeps recent and busy files, never follows links, and asks before each folder unless `-Confirm:$false` is given. Safety checks and output: [docs/commands/Clear-TempFiles.md](docs/commands/Clear-TempFiles.md).
+
 > [!NOTE]
-> Version 0.4.0 exports three commands, `Get-SystemReport`, `Test-NetworkHealth` and `Get-InstalledSoftware`. The other commands of the roadmap are added one at a time, each with its tests and its reference page.
+> Version 0.5.0 exports five commands: `Get-SystemReport`, `Test-NetworkHealth`, `Get-InstalledSoftware`, `Get-DiskHealth` and `Clear-TempFiles`. The HTML report that combines them is the next step of the roadmap.
 
 ## Roadmap
 
@@ -125,8 +145,8 @@ The list is the one of *Programs and Features*: 64-bit, 32-bit (`WOW6432Node`) a
 | [`Get-SystemReport`](docs/commands/Get-SystemReport.md) | Which Windows, which hardware, how much memory, since when is it running, what is the serial number? | Available |
 | [`Test-NetworkHealth`](docs/commands/Test-NetworkHealth.md) | Where does the network stop: adapter, IP address or APIPA, gateway, Internet, DNS or remote port? | Available |
 | [`Get-InstalledSoftware`](docs/commands/Get-InstalledSoftware.md) | Is the application installed, which version, since when? Read from the registry, never `Win32_Product`, ready for CSV | Available |
-| `Get-DiskHealth` | How much free space is left, and does the disk report a health problem? | Planned |
-| `Clear-TempFiles` | Free space safely, with `-WhatIf` to preview and `-Confirm` to approve | Planned |
+| [`Get-DiskHealth`](docs/commands/Get-DiskHealth.md) | How much free space is left, and does the disk report a health problem? | Available |
+| [`Clear-TempFiles`](docs/commands/Clear-TempFiles.md) | Free space safely, with `-WhatIf` to preview and `-Confirm` to approve | Available |
 | `Export-HelpdeskReport` | One self-contained HTML file to attach to the ticket | Planned |
 
 `Test-NetworkHealth` automates the six steps of the layer-by-layer method of the [Network Troubleshooting runbook](https://github.com/Bazeeza/Technical-Runbooks/blob/main/04-Network-Troubleshooting/README.md) from [Technical Runbooks](https://github.com/Bazeeza/Technical-Runbooks).

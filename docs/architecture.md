@@ -11,8 +11,9 @@ helpdesk-toolkit/
 │   ├── HelpdeskToolkit.psm1      Root module: loads Private, then Public, exports Public
 │   ├── HelpdeskToolkit.Types.ps1xml  Default console view of the report objects
 │   ├── Public/                   One exported command per file, file name = command name
-│   └── Private/                  Internal helpers, never exported (ConvertTo-InstallDate, Format-ByteSize,
-│                                 Format-Uptime, Get-UninstallRegistryEntry, Test-IcmpEcho, Test-TcpPort)
+│   └── Private/                  Internal helpers, never exported (ConvertFrom-StorageCode, ConvertTo-InstallDate,
+│                                 Format-ByteSize, Format-Uptime, Get-StorageReliability, Get-TempFileCandidate,
+│                                 Get-TempLocation, Get-UninstallRegistryEntry, Test-IcmpEcho, Test-TcpPort)
 ├── Tests/
 │   ├── Module.Tests.ps1          Rules every command must follow (help, verb, encoding...)
 │   ├── Private/                  One test file per private helper
@@ -51,7 +52,7 @@ A file that fails to load stops the import with its name in the error message, i
 | **Explicit `FunctionsToExport` list** | PowerShell finds the commands without loading the module (command discovery), and a wildcard cannot export a helper by mistake. A test fails if the list and the `Public` folder disagree. |
 | **Windows PowerShell 5.1 as the minimum** | It is installed on every Windows 10 and Windows 11 workstation. A help desk tool cannot require installing PowerShell 7 first. The CI runs the tests in both 5.1 and 7. |
 | **ASCII source files** | Windows PowerShell 5.1 reads a file without a byte order mark with the ANSI code page, so an accented letter or a dash copied from a web page becomes garbage or a syntax error. A test checks every file. |
-| **Read-only by default** | Diagnostic commands only read. The only command planned to change something (`Clear-TempFiles`) must support `-WhatIf` and `-Confirm`. |
+| **Read-only by default** | Diagnostic commands only read. The only command that changes something, `Clear-TempFiles`, supports `-WhatIf` and `-Confirm` (see [below](#the-one-command-that-changes-the-computer)). |
 | **Objects, not text** | Commands return objects. The technician can sort, filter, export to CSV or build the HTML report from the same data, without parsing text. |
 | **Invariant formatting in reports** | Sizes and numbers use a dot as decimal separator on every workstation, so two reports from a French and an English computer can be compared. |
 | **Raw value and readable text side by side** | `MemoryBytes` and `Memory`, `Uptime` and `UptimeText`: the number is for sorting and filtering, the text is for the ticket. |
@@ -63,6 +64,8 @@ A file that fails to load stops the import with its name in the error message, i
 | **Registry read through an explicit view** | `Get-UninstallRegistryEntry` opens `HKLM` with `RegistryKey.OpenBaseKey` and the 64-bit or 32-bit view. The `HKLM:` drive would follow the registry redirector: in a 32-bit PowerShell, `HKLM:\SOFTWARE` silently shows `WOW6432Node`, and the 64-bit programs disappear from the list. |
 | **Only the edge of the system is mocked** | Each command reaches Windows through a few calls (CIM classes, network cmdlets, one registry helper). The tests replace those calls with fictitious data and check everything else for real; the registry helper itself is tested against a temporary key in Pester's `TestRegistry:` drive. |
 | **Culture-independent parsing** | Dates written as text by installers (`20260115`, `1/15/2026`) are parsed with the invariant culture, so a French-Canadian workstation gives the same date as an English one. A value that cannot be read stays empty instead of becoming a wrong date. |
+| **Codes translated from the documentation, never guessed** | Storage classes return numbers (`MediaType = 4`). `ConvertFrom-StorageCode` translates them with the tables published by Microsoft and shows any other value as `Unknown (<code>)`. |
+| **Missing data is said, not hidden** | Without elevation, Windows returns no disk reliability counters and no error. `Get-DiskHealth` sets `ReliabilityAvailable = False` instead of reporting zero errors that were never read, and its status is at least `Unknown` when no physical disk can be read. |
 | **Tests and examples use documentation values** | Fictitious computers (`PC-EXAMPLE01`), the address range `192.0.2.0/24` (RFC 5737) and the MAC block `00-00-5E-00-53-xx` (RFC 7042): no real serial number, address or host name ends up in the repository. |
 
 ## Commands
@@ -74,8 +77,8 @@ The module is built one command at a time, each with its tests and documentation
 | [`Get-SystemReport`](commands/Get-SystemReport.md) | Operating system, CPU, memory, disks, uptime and serial number in one object | Available (0.2.0) |
 | [`Test-NetworkHealth`](commands/Test-NetworkHealth.md) | The steps of the network troubleshooting runbook, automated: adapter, IP address or APIPA, gateway, public IP, DNS, TCP port | Available (0.3.0) |
 | [`Get-InstalledSoftware`](commands/Get-InstalledSoftware.md) | Installed programs read from the 64-bit, 32-bit and per-user uninstall keys, flat objects ready for CSV | Available (0.4.0) |
-| `Get-DiskHealth` | Free space and physical disk health status | Planned |
-| `Clear-TempFiles` | Remove temporary files, with mandatory `-WhatIf` and `-Confirm` support | Planned |
+| [`Get-DiskHealth`](commands/Get-DiskHealth.md) | Free space of each volume against thresholds, health reported by each physical disk, one overall status and the issues | Available (0.5.0) |
+| [`Clear-TempFiles`](commands/Clear-TempFiles.md) | Remove old temporary files with `-WhatIf` and `-Confirm`, fixed locations only, links never followed | Available (0.5.0) |
 | `Export-HelpdeskReport` | A self-contained HTML report that combines the commands above | Planned |
 
 `Test-NetworkHealth` follows the layer-by-layer method of the [Network Troubleshooting runbook](https://github.com/Bazeeza/Technical-Runbooks/blob/main/04-Network-Troubleshooting/README.md) of the Technical Runbooks repository.
@@ -83,6 +86,20 @@ The module is built one command at a time, each with its tests and documentation
 ### Why the registry and not `Win32_Product`
 
 `Get-InstalledSoftware` reads the uninstall keys of the registry. Querying the WMI class `Win32_Product` looks simpler but makes Windows Installer enumerate every MSI package and start a consistency check that can **reconfigure installed applications** (event 1035 in the Application log) and slow the computer down. A diagnostic tool must never change the computer it diagnoses. A Pester test checks that the command never calls `Get-CimInstance`; details in [the command page](commands/Get-InstalledSoftware.md#design-choices).
+
+### The one command that changes the computer
+
+`Clear-TempFiles` removes files, so it follows the PowerShell convention for commands that change the system and adds its own guards:
+
+| Guard | How |
+|---|---|
+| Preview | `SupportsShouldProcess`: `-WhatIf` lists the number of files and the space it would free, and removes nothing. |
+| Confirmation by default | `ConfirmImpact = 'High'` equals the default `$ConfirmPreference`, so PowerShell asks before each location. `-Confirm:$false` is an explicit choice, for scripts. |
+| No free path | Two fixed locations (`User`, `Windows`) resolved by a private helper. The resolved path must also pass five checks: absolute, not a drive root, not a system or profile folder, inside a `Temp` folder, existing. |
+| No link followed | The folder walk checks the `ReparsePoint` attribute and never enters a junction or a symbolic link. |
+| Recent and busy files kept | Only files created and written before the age limit are removed; a file in use is skipped and counted. |
+
+Its tests create real files in Pester's `TestDrive` and check each guard, including a junction that points to a folder outside the temporary folder. Details in [the command page](commands/Clear-TempFiles.md#design-choices).
 
 ---
 
