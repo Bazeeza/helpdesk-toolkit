@@ -21,8 +21,13 @@ function ConvertTo-HtmlText {
           collections       the items joined with ", ", empty items skipped
           anything else     its ToString() value
 
-        then encoded with System.Net.WebUtility.HtmlEncode, available in
-        Windows PowerShell 5.1 and PowerShell 7 without loading System.Web.
+        Control characters are then removed, except tab, line feed and
+        carriage return. Registry values written by installers sometimes end
+        with a NUL character (0x00), which is not allowed in an HTML page.
+
+        Finally the text is encoded with System.Net.WebUtility.HtmlEncode,
+        available in Windows PowerShell 5.1 and PowerShell 7 without loading
+        System.Web.
 
     .PARAMETER Value
         The value to convert. Accepts $null, an empty string and pipeline
@@ -82,6 +87,7 @@ function ConvertTo-HtmlText {
     }
 
     process {
-        [System.Net.WebUtility]::HtmlEncode((ConvertTo-PlainText -Item $Value))
+        $text = (ConvertTo-PlainText -Item $Value) -replace '[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', ''
+        [System.Net.WebUtility]::HtmlEncode($text)
     }
 }

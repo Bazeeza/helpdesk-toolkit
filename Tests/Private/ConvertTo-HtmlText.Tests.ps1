@@ -77,6 +77,13 @@ Describe 'ConvertTo-HtmlText' {
         }
     }
 
+    It 'removes control characters such as the NUL that some installers leave in the registry' {
+        InModuleScope -ModuleName 'HelpdeskToolkit' {
+            ConvertTo-HtmlText -Value ("Example Player" + [char]0 + [char]7) | Should -BeExactly 'Example Player'
+            ConvertTo-HtmlText -Value ("line 1`r`nline`t2") | Should -BeExactly "line 1`r`nline`t2"
+        }
+    }
+
     It 'converts every value received from the pipeline' {
         InModuleScope -ModuleName 'HelpdeskToolkit' {
             $texts = @('<a>', 'b') | ConvertTo-HtmlText
