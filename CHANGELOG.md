@@ -5,6 +5,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-08
+
+HTML report for the ticket.
+
+### Added
+
+- `Export-HelpdeskReport`: runs `Get-SystemReport`, `Test-NetworkHealth`, `Get-DiskHealth` and `Get-InstalledSoftware` on the local computer and writes one self-contained HTML file: header with the computer, ticket number and time, one summary card per section coloured by status, then the details. Choose the sections with `-Section`; a section that fails is written as *Not collected* with the reason and a warning. Supports `-WhatIf` (collects and writes nothing) and `-Confirm`; an existing file is replaced only with `-Force`; `-PassThru` returns the file.
+- Dark and light themes that follow the system, a theme switch without JavaScript, and a print layout on white paper. Every status colour has a contrast ratio of at least 4.5:1, checked by a test.
+- Private helpers `ConvertTo-HtmlText` (invariant text, control characters removed, HTML-encoded), `Get-ReportStatusLevel` and `ConvertTo-StatusBadge` (one colour level for `Pass`, `OK` and `Healthy`), `ConvertTo-ReportTable` (encoded tables with badges and percentage bars), `Get-ReportStyleSheet` (embedded CSS) and `ConvertTo-ReportHtml` (the page, with a Content-Security-Policy that allows no script).
+- Pester tests for the command with mocked diagnostics on `TestDrive`, and for each helper with fictitious results, including values that try to inject HTML.
+- Reference page [docs/commands/Export-HelpdeskReport.md](docs/commands/Export-HelpdeskReport.md).
+
 ## [0.5.0] - 2026-11-07
 
 Disk health and safe cleanup.
