@@ -13,10 +13,10 @@
   <br>
   <a href="https://github.com/Bazeeza/helpdesk-toolkit/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Bazeeza/helpdesk-toolkit/ci.yml?branch=main&style=flat-square&label=CI" alt="CI status"/></a>
   <a href="https://github.com/Bazeeza/helpdesk-toolkit/actions/workflows/markdown.yml"><img src="https://img.shields.io/github/actions/workflow/status/Bazeeza/helpdesk-toolkit/markdown.yml?branch=main&style=flat-square&label=Markdown" alt="Markdown CI status"/></a>
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/Version-0.5.0-ffb454?style=flat-square" alt="Version 0.5.0"/></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/Version-0.6.0-ffb454?style=flat-square" alt="Version 0.6.0"/></a>
 </p>
 
-> **En bref (français) :** module PowerShell de diagnostic pour le soutien technique, compatible avec Windows PowerShell 5.1 (le shell présent sur tous les postes Windows). Chaque commande lit l'état du poste sans le modifier et renvoie des objets réutilisables (CSV, rapport HTML). Le code est vérifié à chaque modification : PSScriptAnalyzer, tests Pester sous PowerShell 5.1 et 7. **Version 0.3.0 :** `Get-SystemReport` (Windows, matériel, numéro de série, mémoire, disques, temps depuis le dernier démarrage) et `Test-NetworkHealth` (diagnostic réseau couche par couche : lien, adresse IP ou APIPA, passerelle, Internet, DNS, port TCP, avec la couche en panne et sa cause probable). **Version 0.4.0 :** `Get-InstalledSoftware` (logiciels installés lus dans le registre, 64 bits, 32 bits et par utilisateur, prêts pour un export CSV, sans jamais interroger `Win32_Product`, qui peut lancer une réparation des paquets MSI). **Version 0.5.0 :** `Get-DiskHealth` (espace libre de chaque volume avec seuils d'alerte, état de santé déclaré par chaque disque physique, un statut global et la liste des problèmes) et `Clear-TempFiles`, la seule commande qui modifie le poste : aperçu avec `-WhatIf`, confirmation demandée par défaut, emplacements fixes seulement, liens jamais suivis. Prochaine étape : le rapport HTML.
+> **En bref (français) :** module PowerShell de diagnostic pour le soutien technique, compatible avec Windows PowerShell 5.1 (le shell présent sur tous les postes Windows). Chaque commande lit l'état du poste sans le modifier et renvoie des objets réutilisables (CSV, rapport HTML). Le code est vérifié à chaque modification : PSScriptAnalyzer, tests Pester sous PowerShell 5.1 et 7. **Version 0.3.0 :** `Get-SystemReport` (Windows, matériel, numéro de série, mémoire, disques, temps depuis le dernier démarrage) et `Test-NetworkHealth` (diagnostic réseau couche par couche : lien, adresse IP ou APIPA, passerelle, Internet, DNS, port TCP, avec la couche en panne et sa cause probable). **Version 0.4.0 :** `Get-InstalledSoftware` (logiciels installés lus dans le registre, 64 bits, 32 bits et par utilisateur, prêts pour un export CSV, sans jamais interroger `Win32_Product`, qui peut lancer une réparation des paquets MSI). **Version 0.5.0 :** `Get-DiskHealth` (espace libre de chaque volume avec seuils d'alerte, état de santé déclaré par chaque disque physique, un statut global et la liste des problèmes) et `Clear-TempFiles`, la seule commande qui modifie le poste : aperçu avec `-WhatIf`, confirmation demandée par défaut, emplacements fixes seulement, liens jamais suivis. **Version 0.6.0 :** `Export-HelpdeskReport`, un rapport HTML autonome (un seul fichier, style intégré, aucun script) qui combine les quatre diagnostics, avec mode sombre ou clair selon le système, bouton pour changer de thème, impression sur fond blanc, et une section « Not collected » avec la raison quand un diagnostic échoue. Toutes les valeurs venant du poste sont encodées en HTML.
 
 ---
 
@@ -26,7 +26,7 @@ The first questions of almost every ticket are the same: *which Windows build, h
 
 `HelpdeskToolkit` answers them with commands that:
 
-- **only read** the computer (the single command that cleans files, `Clear-TempFiles`, previews with `-WhatIf` and asks before acting);
+- **only read** the computer (the single command that cleans files, `Clear-TempFiles`, previews with `-WhatIf` and asks before acting; `Export-HelpdeskReport` only creates its report file);
 - return **objects**, so the same data can be filtered, exported to CSV or put in an HTML report;
 - run in **Windows PowerShell 5.1**, already installed on every Windows 10 and Windows 11 workstation;
 - are **tested** with Pester and mocks, so the tests never depend on the computer they run on.
@@ -135,8 +135,23 @@ Clear-TempFiles
 
 `Clear-TempFiles` is the only command that changes the computer. It cleans fixed temporary folders only, keeps recent and busy files, never follows links, and asks before each folder unless `-Confirm:$false` is given. Safety checks and output: [docs/commands/Clear-TempFiles.md](docs/commands/Clear-TempFiles.md).
 
+### Hand over the ticket: Export-HelpdeskReport
+
+```powershell
+# System, network, disk health and installed software in one HTML file, in the current folder
+Export-HelpdeskReport
+
+# On the desktop with the ticket number, then open it in the browser
+Export-HelpdeskReport -Path "$env:USERPROFILE\Desktop" -TicketNumber 'INC-0042' -PassThru | Invoke-Item
+
+# Only the sections that matter for this ticket
+Export-HelpdeskReport -Section Network, Disk
+```
+
+One self-contained file to attach to the ticket: summary cards coloured by status, then the details of each section. The style sheet is embedded and the page runs no script, so it opens offline and from an e-mail. It follows the dark or light theme of the system, has a theme switch, and prints on white paper. A diagnostic that fails is written as *Not collected* with the reason, and every value read on the computer is HTML-encoded. Layout and design choices: [docs/commands/Export-HelpdeskReport.md](docs/commands/Export-HelpdeskReport.md).
+
 > [!NOTE]
-> Version 0.5.0 exports five commands: `Get-SystemReport`, `Test-NetworkHealth`, `Get-InstalledSoftware`, `Get-DiskHealth` and `Clear-TempFiles`. The HTML report that combines them is the next step of the roadmap.
+> Version 0.6.0 exports six commands: `Get-SystemReport`, `Test-NetworkHealth`, `Get-InstalledSoftware`, `Get-DiskHealth`, `Clear-TempFiles` and `Export-HelpdeskReport`. The report contains the serial number and network addresses of the computer: share it through the ticket only.
 
 ## Roadmap
 
@@ -147,7 +162,7 @@ Clear-TempFiles
 | [`Get-InstalledSoftware`](docs/commands/Get-InstalledSoftware.md) | Is the application installed, which version, since when? Read from the registry, never `Win32_Product`, ready for CSV | Available |
 | [`Get-DiskHealth`](docs/commands/Get-DiskHealth.md) | How much free space is left, and does the disk report a health problem? | Available |
 | [`Clear-TempFiles`](docs/commands/Clear-TempFiles.md) | Free space safely, with `-WhatIf` to preview and `-Confirm` to approve | Available |
-| `Export-HelpdeskReport` | One self-contained HTML file to attach to the ticket | Planned |
+| [`Export-HelpdeskReport`](docs/commands/Export-HelpdeskReport.md) | One self-contained HTML file to attach to the ticket, in a dark or light theme | Available |
 
 `Test-NetworkHealth` automates the six steps of the layer-by-layer method of the [Network Troubleshooting runbook](https://github.com/Bazeeza/Technical-Runbooks/blob/main/04-Network-Troubleshooting/README.md) from [Technical Runbooks](https://github.com/Bazeeza/Technical-Runbooks).
 

@@ -14,6 +14,8 @@ helpdesk-toolkit/
 │   └── Private/                  Internal helpers, never exported (ConvertFrom-StorageCode, ConvertTo-InstallDate,
 │                                 Format-ByteSize, Format-Uptime, Get-StorageReliability, Get-TempFileCandidate,
 │                                 Get-TempLocation, Get-UninstallRegistryEntry, Test-IcmpEcho, Test-TcpPort)
+│                                 and the HTML report builders (ConvertTo-HtmlText, ConvertTo-ReportHtml,
+│                                 ConvertTo-ReportTable, ConvertTo-StatusBadge, Get-ReportStatusLevel, Get-ReportStyleSheet)
 ├── Tests/
 │   ├── Module.Tests.ps1          Rules every command must follow (help, verb, encoding...)
 │   ├── Private/                  One test file per private helper
@@ -52,7 +54,7 @@ A file that fails to load stops the import with its name in the error message, i
 | **Explicit `FunctionsToExport` list** | PowerShell finds the commands without loading the module (command discovery), and a wildcard cannot export a helper by mistake. A test fails if the list and the `Public` folder disagree. |
 | **Windows PowerShell 5.1 as the minimum** | It is installed on every Windows 10 and Windows 11 workstation. A help desk tool cannot require installing PowerShell 7 first. The CI runs the tests in both 5.1 and 7. |
 | **ASCII source files** | Windows PowerShell 5.1 reads a file without a byte order mark with the ANSI code page, so an accented letter or a dash copied from a web page becomes garbage or a syntax error. A test checks every file. |
-| **Read-only by default** | Diagnostic commands only read. The only command that changes something, `Clear-TempFiles`, supports `-WhatIf` and `-Confirm` (see [below](#the-one-command-that-changes-the-computer)). |
+| **Read-only by default** | Diagnostic commands only read. The only command that changes something, `Clear-TempFiles`, supports `-WhatIf` and `-Confirm` (see [below](#the-one-command-that-changes-the-computer)). `Export-HelpdeskReport` creates a new file, so it supports them too, and never replaces a file without `-Force`. |
 | **Objects, not text** | Commands return objects. The technician can sort, filter, export to CSV or build the HTML report from the same data, without parsing text. |
 | **Invariant formatting in reports** | Sizes and numbers use a dot as decimal separator on every workstation, so two reports from a French and an English computer can be compared. |
 | **Raw value and readable text side by side** | `MemoryBytes` and `Memory`, `Uptime` and `UptimeText`: the number is for sorting and filtering, the text is for the ticket. |
@@ -66,6 +68,8 @@ A file that fails to load stops the import with its name in the error message, i
 | **Culture-independent parsing** | Dates written as text by installers (`20260115`, `1/15/2026`) are parsed with the invariant culture, so a French-Canadian workstation gives the same date as an English one. A value that cannot be read stays empty instead of becoming a wrong date. |
 | **Codes translated from the documentation, never guessed** | Storage classes return numbers (`MediaType = 4`). `ConvertFrom-StorageCode` translates them with the tables published by Microsoft and shows any other value as `Unknown (<code>)`. |
 | **Missing data is said, not hidden** | Without elevation, Windows returns no disk reliability counters and no error. `Get-DiskHealth` sets `ReliabilityAvailable = False` instead of reporting zero errors that were never read, and its status is at least `Unknown` when no physical disk can be read. |
+| **Collect, then render** | `Export-HelpdeskReport` only calls the public commands and writes the file; `ConvertTo-ReportHtml` only turns objects into HTML. The page can therefore be tested with fictitious results, and the commands keep returning objects instead of formatted text. |
+| **Every value from the computer is untrusted** | Program names, labels and error messages are HTML-encoded in one place, `ConvertTo-HtmlText`, and the page forbids scripts with a Content-Security-Policy (see [below](#the-html-report)). |
 | **Tests and examples use documentation values** | Fictitious computers (`PC-EXAMPLE01`), the address range `192.0.2.0/24` (RFC 5737) and the MAC block `00-00-5E-00-53-xx` (RFC 7042): no real serial number, address or host name ends up in the repository. |
 
 ## Commands
@@ -79,7 +83,7 @@ The module is built one command at a time, each with its tests and documentation
 | [`Get-InstalledSoftware`](commands/Get-InstalledSoftware.md) | Installed programs read from the 64-bit, 32-bit and per-user uninstall keys, flat objects ready for CSV | Available (0.4.0) |
 | [`Get-DiskHealth`](commands/Get-DiskHealth.md) | Free space of each volume against thresholds, health reported by each physical disk, one overall status and the issues | Available (0.5.0) |
 | [`Clear-TempFiles`](commands/Clear-TempFiles.md) | Remove old temporary files with `-WhatIf` and `-Confirm`, fixed locations only, links never followed | Available (0.5.0) |
-| `Export-HelpdeskReport` | A self-contained HTML report that combines the commands above | Planned |
+| [`Export-HelpdeskReport`](commands/Export-HelpdeskReport.md) | One self-contained HTML file that combines the four diagnostics, for the ticket | Available (0.6.0) |
 
 `Test-NetworkHealth` follows the layer-by-layer method of the [Network Troubleshooting runbook](https://github.com/Bazeeza/Technical-Runbooks/blob/main/04-Network-Troubleshooting/README.md) of the Technical Runbooks repository.
 
@@ -100,6 +104,40 @@ The module is built one command at a time, each with its tests and documentation
 | Recent and busy files kept | Only files created and written before the age limit are removed; a file in use is skipped and counted. |
 
 Its tests create real files in Pester's `TestDrive` and check each guard, including a junction that points to a folder outside the temporary folder. Details in [the command page](commands/Clear-TempFiles.md#design-choices).
+
+### The HTML report
+
+`Export-HelpdeskReport` is built from small private functions, each tested on its own:
+
+```mermaid
+flowchart TB
+    EXP["Export-HelpdeskReport<br/>collect and write"] --> PAGE["ConvertTo-ReportHtml<br/>page and sections"]
+    PAGE --> TABLE["ConvertTo-ReportTable<br/>rows, badges, bars"]
+    PAGE --> CSS["Get-ReportStyleSheet<br/>themes and print"]
+    TABLE --> BADGE["ConvertTo-StatusBadge"]
+    BADGE --> LEVEL["Get-ReportStatusLevel<br/>ok, warn, crit, muted"]
+    PAGE --> TEXT["ConvertTo-HtmlText<br/>invariant text, encoded"]
+    TABLE --> TEXT
+    BADGE --> TEXT
+
+    classDef pub fill:#070d1c,stroke:#c792ea,color:#ffffff
+    classDef build fill:#070d1c,stroke:#2b9dff,color:#ffffff
+    classDef safe fill:#070d1c,stroke:#3fe0a0,color:#ffffff
+    class EXP pub
+    class PAGE,TABLE,CSS,BADGE,LEVEL build
+    class TEXT safe
+```
+
+| Concern | How it is handled |
+|---|---|
+| Injection | Every value goes through `ConvertTo-HtmlText` (`WebUtility.HtmlEncode`), table class names are validated, and the page declares `default-src 'none'; style-src 'unsafe-inline'`, so a browser runs no script even if one slipped through. |
+| Invalid characters | Control characters are removed before encoding: a real uninstall entry ended with a NUL character, which is invalid in HTML. |
+| One status vocabulary | `Pass`, `OK` and `Healthy` mean the same thing in different commands. `Get-ReportStatusLevel` maps them to four colour levels; an unknown word is never shown as healthy. |
+| Colour is not the only signal | Each badge writes its word, so the report reads in black and white and with a screen reader. A test computes the WCAG contrast ratio of every status colour in both themes. |
+| Self-contained | The CSS is embedded and nothing is loaded from outside: the file opens offline, from a ticket or an e-mail. |
+| Missing data | A section that failed is written as *Not collected* with the reason, never left out silently. |
+
+Details in [the command page](commands/Export-HelpdeskReport.md#design-choices).
 
 ---
 
