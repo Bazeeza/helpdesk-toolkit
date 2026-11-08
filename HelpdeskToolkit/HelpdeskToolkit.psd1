@@ -23,6 +23,7 @@
     # Tests/Module.Tests.ps1 checks that this list matches the Public folder.
     FunctionsToExport    = @(
         'Clear-TempFiles'
+        'Export-HelpdeskReport'
         'Get-DiskHealth'
         'Get-InstalledSoftware'
         'Get-SystemReport'
