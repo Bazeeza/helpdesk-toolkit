@@ -58,8 +58,27 @@ function Get-SystemReport {
         Returns the report only if the computer has not restarted for more
         than a week, a common cause of pending updates and slow sessions.
 
+    .INPUTS
+        System.String
+
+        Computer names, by value or from a ComputerName or Name property.
+
     .OUTPUTS
         HelpdeskToolkit.SystemReport
+
+        One object per computer. The console shows a short view; use
+        Select-Object * to see every property.
+
+    .NOTES
+        Read-only. No administrator rights needed on the local computer.
+        Remote computers need WinRM and the right to query CIM. Works in
+        Windows PowerShell 5.1 and PowerShell 7.
+
+    .LINK
+        https://github.com/Bazeeza/helpdesk-toolkit/blob/main/docs/commands/Get-SystemReport.md
+
+    .LINK
+        Export-HelpdeskReport
 
     .LINK
         https://learn.microsoft.com/en-us/powershell/module/cimcmdlets/get-ciminstance

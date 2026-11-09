@@ -85,8 +85,28 @@ function Test-NetworkHealth {
 
         Writes the failing layer and the diagnosis, ready for the ticket.
 
+    .INPUTS
+        None
+
+        This command does not accept pipeline input.
+
     .OUTPUTS
         HelpdeskToolkit.NetworkHealth
+
+        One object with the adapter configuration, Healthy, FailedStep,
+        Diagnosis and the Checks of the six steps.
+
+    .NOTES
+        Read-only: no setting is changed. No administrator rights needed.
+        Local computer only. Uses the NetTCPIP and NetAdapter modules of
+        Windows and the .NET Ping and TcpClient classes, so the result is
+        the same in Windows PowerShell 5.1 and PowerShell 7.
+
+    .LINK
+        https://github.com/Bazeeza/helpdesk-toolkit/blob/main/docs/commands/Test-NetworkHealth.md
+
+    .LINK
+        Export-HelpdeskReport
 
     .LINK
         https://github.com/Bazeeza/Technical-Runbooks/blob/main/04-Network-Troubleshooting/README.md

@@ -76,11 +76,34 @@ function Export-HelpdeskReport {
         Shows the file that would be written, without collecting or writing
         anything.
 
+    .INPUTS
+        None
+
+        This command does not accept pipeline input.
+
     .OUTPUTS
         None by default. System.IO.FileInfo with -PassThru.
 
+    .NOTES
+        Reads the computer and creates one file; changes nothing else. No
+        administrator rights needed (an elevated session adds the disk
+        reliability counters). Local computer only. The file is UTF-8 and
+        opens in any current browser.
+
     .LINK
         https://github.com/Bazeeza/helpdesk-toolkit/blob/main/docs/commands/Export-HelpdeskReport.md
+
+    .LINK
+        Get-SystemReport
+
+    .LINK
+        Test-NetworkHealth
+
+    .LINK
+        Get-DiskHealth
+
+    .LINK
+        Get-InstalledSoftware
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([System.IO.FileInfo])]

@@ -54,8 +54,26 @@ function Get-DiskHealth {
 
         Stricter thresholds, for example on a small SSD.
 
+    .INPUTS
+        None
+
+        This command does not accept pipeline input.
+
     .OUTPUTS
         HelpdeskToolkit.DiskHealth
+
+        One object with Status, Issues, Volumes and PhysicalDisks.
+
+    .NOTES
+        Read-only. Free space and HealthStatus need no administrator rights;
+        the reliability counters usually do. A value that Windows does not
+        give is reported as Unknown, never as OK. Local computer only.
+
+    .LINK
+        https://github.com/Bazeeza/helpdesk-toolkit/blob/main/docs/commands/Get-DiskHealth.md
+
+    .LINK
+        Clear-TempFiles
 
     .LINK
         https://learn.microsoft.com/en-us/windows-hardware/drivers/storage/msft-physicaldisk

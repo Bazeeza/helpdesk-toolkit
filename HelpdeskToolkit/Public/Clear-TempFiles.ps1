@@ -59,8 +59,27 @@ function Clear-TempFiles {
 
         Checks free space first, then previews what a cleanup would free.
 
+    .INPUTS
+        None
+
+        This command does not accept pipeline input.
+
     .OUTPUTS
         HelpdeskToolkit.TempCleanup
+
+        One object per location: files found, removed and skipped, and the
+        space found and freed. Returned with -WhatIf too.
+
+    .NOTES
+        Changes the computer: run it with -WhatIf first. The Windows
+        location needs an elevated session. Local computer only. Files are
+        removed, not moved to the Recycle Bin.
+
+    .LINK
+        https://github.com/Bazeeza/helpdesk-toolkit/blob/main/docs/commands/Clear-TempFiles.md
+
+    .LINK
+        Get-DiskHealth
 
     .LINK
         https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/everything-about-shouldprocess
