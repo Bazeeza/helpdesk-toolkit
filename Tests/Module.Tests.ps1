@@ -106,6 +106,33 @@ Describe 'Exported commands' {
     }
 }
 
+Describe 'Conceptual help about_HelpdeskToolkit' {
+    BeforeAll {
+        $aboutPath = Join-Path -Path $moduleRoot -ChildPath 'en-US\about_HelpdeskToolkit.help.txt'
+    }
+
+    It 'exists in the en-US folder of the module' {
+        $aboutPath | Should -Exist
+    }
+
+    It 'is ASCII, so every console shows it the same way' {
+        $nonAscii = @([System.IO.File]::ReadAllBytes($aboutPath) | Where-Object { $_ -gt 0x7F }).Count
+        $nonAscii | Should -Be 0
+    }
+
+    It 'is found by Get-Help once the module is imported' {
+        $topic = Get-Help -Name 'about_HelpdeskToolkit' -ErrorAction SilentlyContinue | Out-String
+        $topic | Should -Match 'SHORT DESCRIPTION'
+    }
+
+    It 'names every public command' {
+        $text = Get-Content -Path $aboutPath -Raw
+        foreach ($name in (Get-ChildItem -Path (Join-Path -Path $moduleRoot -ChildPath 'Public') -Filter '*.ps1' -File).BaseName) {
+            $text | Should -Match ([regex]::Escape($name)) -Because "about_HelpdeskToolkit should present $name"
+        }
+    }
+}
+
 Describe 'Public command <Name>' -ForEach $publicFunctions {
     BeforeAll {
         $command = Get-Command -Name $Name -Module 'HelpdeskToolkit'
