@@ -20,9 +20,29 @@ Run it in **Windows PowerShell 5.1** (`powershell.exe`) at least once: it is the
 1. Create `HelpdeskToolkit/Public/<Verb>-<Noun>.ps1` containing one function with the same name.
 2. Add the name to `FunctionsToExport` in `HelpdeskToolkit/HelpdeskToolkit.psd1`.
 3. Create `Tests/Public/<Verb>-<Noun>.Tests.ps1`. Mock every CIM, registry and network call: tests must pass on any computer, without administrator rights and without reading real data.
-4. Add a line to the `Unreleased` section of [CHANGELOG.md](CHANGELOG.md).
+4. Create `docs/commands/<Verb>-<Noun>.md` and add the command to the `COMMANDS` list of [about_HelpdeskToolkit](HelpdeskToolkit/en-US/about_HelpdeskToolkit.help.txt).
+5. Add a line to the `Unreleased` section of [CHANGELOG.md](CHANGELOG.md).
 
-`Tests/Module.Tests.ps1` then checks the new command automatically: approved verb, advanced function, synopsis, description, example, help for every parameter, file encoding.
+`Tests/Module.Tests.ps1` then checks the new command automatically: approved verb, advanced function, file encoding, and a complete help page.
+
+## What a complete help page contains
+
+`Get-Help <command> -Full` is the first documentation a technician reads, often on a computer without a browser. The tests require:
+
+| Section | Content |
+|---|---|
+| `.SYNOPSIS` and `.DESCRIPTION` | What the command answers, where the data comes from, what it does not do. |
+| `.PARAMETER` | One per parameter, with its default value. |
+| `.EXAMPLE` | At least two, each followed by a sentence that says what it does and when to use it. |
+| `.INPUTS` and `.OUTPUTS` | The type accepted from the pipeline (or `None`) and the type returned. |
+| `.NOTES` | Does it change the computer, which rights it needs, does it work on a remote computer. |
+| `.LINK` | The **first** link is the page of the command in `docs/commands`, so `Get-Help <command> -Online` opens it. Related commands are linked by name. |
+
+Comment-based help at the top of a script must be separated from a `#Requires` line by a blank line; otherwise PowerShell reads both as one comment and `Get-Help` shows only the syntax.
+
+## Adding an example script
+
+Scripts in [examples](examples/README.md) follow the same help rules, load the module from `..\HelpdeskToolkit`, and are listed in `examples/README.md`. A script that writes a file supports `-WhatIf` and never replaces a file without `-Force`. `Tests/Examples.Tests.ps1` checks all of this.
 
 ## Rules for every command
 
