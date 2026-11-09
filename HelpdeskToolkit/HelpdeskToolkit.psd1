@@ -3,7 +3,7 @@
     RootModule           = 'HelpdeskToolkit.psm1'
 
     # Semantic versioning: MAJOR.MINOR.PATCH (see CHANGELOG.md)
-    ModuleVersion        = '0.6.0'
+    ModuleVersion        = '1.0.0'
 
     GUID                 = '5b72467c-151e-46b5-83b9-469abcf3586b'
     Author               = 'bazeeza'
@@ -38,6 +38,7 @@
             Tags       = @('HelpDesk', 'Diagnostics', 'Troubleshooting', 'Windows', 'SysAdmin')
             LicenseUri = 'https://github.com/Bazeeza/helpdesk-toolkit/blob/main/LICENSE'
             ProjectUri = 'https://github.com/Bazeeza/helpdesk-toolkit'
+            ReleaseNotes = 'https://github.com/Bazeeza/helpdesk-toolkit/blob/main/CHANGELOG.md'
         }
     }
 }

@@ -5,6 +5,27 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-09
+
+First stable version: the six commands are complete, documented in the shell and in the repository, and their names, parameters and output properties are now stable. A future change that breaks them will be a new major version.
+
+### Added
+
+- Complete `Get-Help` page for every public command: input and output types, notes on rights, scope and side effects, related commands, and a first link to the reference page so `Get-Help <command> -Online` opens it.
+- Conceptual help topic `about_HelpdeskToolkit` (`Get-Help about_HelpdeskToolkit`): the commands, what each one changes, privacy, the order of a typical ticket and execution policy notes.
+- [examples](examples/README.md) folder: `Get-TicketSummary.ps1` (a few lines for the ticket notes, without serial number or addresses), `Invoke-DiskSpaceTriage.ps1` (disk health, cleanup preview, cleanup only with `-Clean`), `Export-SoftwareInventory.ps1` (CSV for Excel) and `New-SampleReport.ps1` (the HTML report built from fictitious results).
+- Screenshots of the sample report in the dark and light themes, generated from fictitious data only.
+- Pester tests that require the complete help of every public command, the about topic, and the help, `-WhatIf` and no-overwrite behaviour of the example scripts. PSScriptAnalyzer also checks the examples.
+- `ReleaseNotes` link in the module manifest.
+
+### Fixed
+
+- `Get-Help .\Invoke-Tests.ps1` showed only the syntax: the help block touched the `#Requires` line, so PowerShell did not read it as help.
+
+### Changed
+
+- Contributing guide: the sections a help page must contain, and the rules for example scripts.
+
 ## [0.6.0] - 2026-11-08
 
 HTML report for the ticket.

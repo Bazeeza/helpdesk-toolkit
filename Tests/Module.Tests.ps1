@@ -106,6 +106,33 @@ Describe 'Exported commands' {
     }
 }
 
+Describe 'Conceptual help about_HelpdeskToolkit' {
+    BeforeAll {
+        $aboutPath = Join-Path -Path $moduleRoot -ChildPath 'en-US\about_HelpdeskToolkit.help.txt'
+    }
+
+    It 'exists in the en-US folder of the module' {
+        $aboutPath | Should -Exist
+    }
+
+    It 'is ASCII, so every console shows it the same way' {
+        $nonAscii = @([System.IO.File]::ReadAllBytes($aboutPath) | Where-Object { $_ -gt 0x7F }).Count
+        $nonAscii | Should -Be 0
+    }
+
+    It 'is found by Get-Help once the module is imported' {
+        $topic = Get-Help -Name 'about_HelpdeskToolkit' -ErrorAction SilentlyContinue | Out-String
+        $topic | Should -Match 'SHORT DESCRIPTION'
+    }
+
+    It 'names every public command' {
+        $text = Get-Content -Path $aboutPath -Raw
+        foreach ($name in (Get-ChildItem -Path (Join-Path -Path $moduleRoot -ChildPath 'Public') -Filter '*.ps1' -File).BaseName) {
+            $text | Should -Match ([regex]::Escape($name)) -Because "about_HelpdeskToolkit should present $name"
+        }
+    }
+}
+
 Describe 'Public command <Name>' -ForEach $publicFunctions {
     BeforeAll {
         $command = Get-Command -Name $Name -Module 'HelpdeskToolkit'
@@ -127,8 +154,38 @@ Describe 'Public command <Name>' -ForEach $publicFunctions {
         $help.Description | Should -Not -BeNullOrEmpty
     }
 
-    It 'has at least one example' {
-        @($help.Examples.Example).Count | Should -BeGreaterThan 0
+    It 'has at least two examples, each with an explanation' {
+        $examples = @($help.Examples.Example)
+        $examples.Count | Should -BeGreaterOrEqual 2
+        foreach ($example in $examples) {
+            $remarks = (@($example.Remarks) | ForEach-Object { $_.Text }) -join ''
+            $remarks.Trim() | Should -Not -BeNullOrEmpty -Because "$($example.Title.Trim('- ')) needs a sentence that says what it does"
+        }
+    }
+
+    It 'documents its input and output types' {
+        @($help.InputTypes.InputType).Count | Should -BeGreaterThan 0
+        ($help.InputTypes.InputType.Type.Name -join '').Trim() | Should -Not -BeNullOrEmpty
+        @($help.ReturnValues.ReturnValue).Count | Should -BeGreaterThan 0
+        ($help.ReturnValues.ReturnValue.Type.Name -join '').Trim() | Should -Not -BeNullOrEmpty
+    }
+
+    It 'has notes on rights, scope and side effects' {
+        ((@($help.AlertSet.Alert) | ForEach-Object { $_.Text }) -join '').Trim() | Should -Not -BeNullOrEmpty
+    }
+
+    It 'opens its reference page with Get-Help -Online' {
+        # Get-Help -Online opens the first link of the help that is a URI
+        $firstUri = @($help.RelatedLinks.NavigationLink | Where-Object { $_.Uri } | ForEach-Object { $_.Uri })[0]
+        $firstUri | Should -Be "https://github.com/Bazeeza/helpdesk-toolkit/blob/main/docs/commands/$Name.md"
+        Join-Path -Path $repoRoot -ChildPath "docs\commands\$Name.md" | Should -Exist
+    }
+
+    It 'links only to commands that exist' {
+        $commandLinks = @($help.RelatedLinks.NavigationLink | Where-Object { -not $_.Uri -and $_.LinkText } | ForEach-Object { $_.LinkText.Trim() })
+        foreach ($link in $commandLinks) {
+            Get-Command -Name $link -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty -Because "the help of $Name links to $link"
+        }
     }
 
     It 'documents every parameter' {

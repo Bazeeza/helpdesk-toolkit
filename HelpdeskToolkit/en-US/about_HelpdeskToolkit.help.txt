@@ -1,0 +1,112 @@
+TOPIC
+    about_HelpdeskToolkit
+
+SHORT DESCRIPTION
+    Read-only help desk diagnostics for Windows workstations, and one
+    self-contained HTML report to attach to the ticket.
+
+LONG DESCRIPTION
+    HelpdeskToolkit answers the first questions of a help desk ticket with
+    commands instead of screenshots: which Windows and which hardware, where
+    the network stops, which software is installed, how much disk space is
+    left and whether the drive reports a problem.
+
+    Every command returns objects. The same data can be read in the
+    console, filtered with Where-Object, exported with Export-Csv or written
+    in the HTML report of the module.
+
+    The module runs in Windows PowerShell 5.1, which is installed on every
+    Windows 10 and Windows 11 workstation, and in PowerShell 7.
+
+COMMANDS
+    Get-SystemReport       Windows edition and build, manufacturer, model,
+                           serial number, processor, memory, fixed disks,
+                           last boot time and uptime. Local or remote
+                           (WinRM).
+
+    Test-NetworkHealth     The network tested layer by layer: link, IPv4
+                           address or APIPA, gateway, public address, DNS,
+                           TCP port. Names the first layer that failed and
+                           the probable cause.
+
+    Get-InstalledSoftware  Programs read from the uninstall keys of the
+                           registry, as in Programs and Features. Never
+                           queries Win32_Product.
+
+    Get-DiskHealth         Free space of each volume against two thresholds
+                           and the health reported by each physical disk,
+                           with one overall status and a list of issues.
+
+    Clear-TempFiles        Removes old files from the temporary folders.
+                           The only command that changes the computer.
+
+    Export-HelpdeskReport  Runs the four diagnostics and writes one HTML
+                           file: summary cards, then the details.
+
+SAFETY
+    Get-SystemReport, Test-NetworkHealth, Get-InstalledSoftware and
+    Get-DiskHealth only read. They change no setting and need no
+    administrator rights.
+
+    Export-HelpdeskReport only creates its report file. It replaces an
+    existing file only with -Force, and writes nothing with -WhatIf.
+
+    Clear-TempFiles removes files. It cleans fixed locations only, keeps
+    files younger than 7 days, never follows links, and asks before each
+    location. Always run it with -WhatIf first.
+
+PRIVACY
+    The results contain the serial number, the network and MAC addresses
+    and the installed programs of the computer. Attach them to the ticket
+    only, never to a public forum or an outside chat.
+
+A TYPICAL TICKET
+    1  Get-SystemReport                      who and what is the computer?
+    2  Test-NetworkHealth                    is the network the problem?
+    3  Get-DiskHealth                        is the disk full or failing?
+    4  Clear-TempFiles -WhatIf               how much would a cleanup free?
+    5  Export-HelpdeskReport -TicketNumber   attach the evidence, escalate
+
+EXAMPLES
+    Load the module from the folder of the repository:
+
+        Import-Module .\HelpdeskToolkit\HelpdeskToolkit.psd1
+        Get-Command -Module HelpdeskToolkit
+
+    Read the full help of a command, or open its reference page:
+
+        Get-Help Test-NetworkHealth -Full
+        Get-Help Test-NetworkHealth -Online
+
+    Write the report of the ticket on the desktop and open it:
+
+        Export-HelpdeskReport -Path "$env:USERPROFILE\Desktop" -TicketNumber 'INC-0042' -PassThru |
+            Invoke-Item
+
+    More scripts that combine the commands are in the examples folder of
+    the repository.
+
+TROUBLESHOOTING NOTE
+    "running scripts is disabled on this system": the execution policy of
+    the computer blocks unsigned scripts. Ask the administrator, or allow
+    them for the current PowerShell window only:
+
+        Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+
+    Files extracted from a downloaded ZIP carry a "downloaded from the
+    Internet" mark. Remove it once with:
+
+        Get-ChildItem -Recurse -File | Unblock-File
+
+SEE ALSO
+    Get-SystemReport
+    Test-NetworkHealth
+    Get-InstalledSoftware
+    Get-DiskHealth
+    Clear-TempFiles
+    Export-HelpdeskReport
+    about_Execution_Policies
+    https://github.com/Bazeeza/helpdesk-toolkit
+
+KEYWORDS
+    HelpDesk, Diagnostics, Troubleshooting, Windows, Ticket

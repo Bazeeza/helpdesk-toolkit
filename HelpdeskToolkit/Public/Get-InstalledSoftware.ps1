@@ -74,8 +74,27 @@ function Get-InstalledSoftware {
         Runs the command on a remote computer through PowerShell remoting,
         when the module is copied on it (here in C:\Tools).
 
+    .INPUTS
+        None
+
+        This command does not accept pipeline input.
+
     .OUTPUTS
         HelpdeskToolkit.InstalledSoftware
+
+        One flat object per program, sorted by name, ready for Export-Csv.
+
+    .NOTES
+        Read-only. No administrator rights needed. Local computer only; use
+        Invoke-Command for a remote computer. The 64-bit and 32-bit registry
+        views are opened explicitly, so a 32-bit PowerShell sees the same
+        list as a 64-bit one.
+
+    .LINK
+        https://github.com/Bazeeza/helpdesk-toolkit/blob/main/docs/commands/Get-InstalledSoftware.md
+
+    .LINK
+        Export-HelpdeskReport
 
     .LINK
         https://learn.microsoft.com/en-us/windows/win32/msi/uninstall-registry-key

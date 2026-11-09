@@ -71,12 +71,14 @@ A file that fails to load stops the import with its name in the error message, i
 | **Collect, then render** | `Export-HelpdeskReport` only calls the public commands and writes the file; `ConvertTo-ReportHtml` only turns objects into HTML. The page can therefore be tested with fictitious results, and the commands keep returning objects instead of formatted text. |
 | **Every value from the computer is untrusted** | Program names, labels and error messages are HTML-encoded in one place, `ConvertTo-HtmlText`, and the page forbids scripts with a Content-Security-Policy (see [below](#the-html-report)). |
 | **Tests and examples use documentation values** | Fictitious computers (`PC-EXAMPLE01`), the address range `192.0.2.0/24` (RFC 5737) and the MAC block `00-00-5E-00-53-xx` (RFC 7042): no real serial number, address or host name ends up in the repository. |
+| **Help lives next to the code** | A technician often has a shell and no browser. Each command carries its full help (`Get-Help -Full`), `about_HelpdeskToolkit` gives the overview, and the first `.LINK` points to the page in `docs/commands` for `Get-Help -Online`. Tests fail when a section is missing, so the help cannot fall behind the code. |
+| **Screenshots come from a script** | The README screenshots are rendered from [`examples/New-SampleReport.ps1`](../examples/New-SampleReport.ps1), which feeds fictitious results to the same page builder. They can be generated again after any change to the report, and never show a real computer. |
 
 ## Commands
 
-The module is built one command at a time, each with its tests and documentation. The [CHANGELOG](../CHANGELOG.md) records each release.
+The module is built one command at a time, each with its tests and documentation. The [CHANGELOG](../CHANGELOG.md) records each release; version 1.0.0 fixes the names, parameters and output properties of the six commands.
 
-| Command | Purpose | Status |
+| Command | Purpose | Since |
 |---|---|---|
 | [`Get-SystemReport`](commands/Get-SystemReport.md) | Operating system, CPU, memory, disks, uptime and serial number in one object | Available (0.2.0) |
 | [`Test-NetworkHealth`](commands/Test-NetworkHealth.md) | The steps of the network troubleshooting runbook, automated: adapter, IP address or APIPA, gateway, public IP, DNS, TCP port | Available (0.3.0) |

@@ -1,4 +1,5 @@
 #Requires -Version 5.1
+
 <#
 .SYNOPSIS
     Runs the checks of the continuous integration on a workstation.
@@ -7,7 +8,7 @@
     One script for both places: the GitHub Actions workflow calls it too, so a
     change that passes here passes in the pipeline.
 
-    Analyze  PSScriptAnalyzer on the module, this script and the tests
+    Analyze  PSScriptAnalyzer on the module, the examples, this script and the tests
     Test     Pester 5 on every *.Tests.ps1 file of the Tests folder
     All      both, analysis first
 
@@ -50,6 +51,7 @@ function Invoke-Analysis {
     $targets = @(
         @{ Path = Join-Path -Path $repoRoot -ChildPath 'HelpdeskToolkit'; Settings = Join-Path -Path $repoRoot -ChildPath 'PSScriptAnalyzerSettings.psd1' }
         @{ Path = Join-Path -Path $repoRoot -ChildPath 'Invoke-Tests.ps1'; Settings = Join-Path -Path $repoRoot -ChildPath 'PSScriptAnalyzerSettings.psd1' }
+        @{ Path = Join-Path -Path $repoRoot -ChildPath 'examples'; Settings = Join-Path -Path $repoRoot -ChildPath 'PSScriptAnalyzerSettings.psd1' }
         @{ Path = Join-Path -Path $repoRoot -ChildPath 'Tests'; Settings = Join-Path -Path $repoRoot -ChildPath 'Tests\PSScriptAnalyzerSettings.psd1' }
     )
 
